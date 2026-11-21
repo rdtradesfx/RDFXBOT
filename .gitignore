@@ -1,0 +1,16 @@
+# Secrets: never commit these
+.env
+.env.*
+*.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Local junk
+.DS_Store
+state/*.corrupt
+state/.state-*.tmp
