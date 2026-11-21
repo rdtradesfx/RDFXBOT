@@ -1,0 +1,94 @@
+# RDFX bot: schedule
+#
+# ALL TIMES ARE UK TIME (Europe/London). GMT/BST is automatic.
+#
+# IMPORTANT: always put times in "quotes", e.g. "13:00". Without quotes YAML
+# misreads some times as numbers.
+#
+# Each entry:
+#   kind:            which message type to send (see list at the bottom)
+#   enabled:         true/false, switch one message on or off
+#   days:            optional, narrows the days (mon tue wed thu fri sat sun).
+#                    Leave out to use every day allowed in settings.yaml.
+#   times:           one or more "HH:MM" UK times
+#   offset_minutes:  optional, shifts the time later (0 is allowed)
+#   catch_up_minutes: optional, overrides the global catch-up window for this entry
+
+# If GitHub runs the bot late, a message is still sent as long as it is within
+# this many minutes of its scheduled time. After that it is skipped (never sent stale).
+catch_up_minutes: 45
+
+messages:
+  asia_open:
+    kind: asia
+    enabled: true
+    times: ["00:00"]
+
+  daily_news:
+    kind: news
+    enabled: true
+    times: ["07:00"]
+
+  london_open:
+    kind: london
+    enabled: true
+    times: ["08:00"]
+
+  economic_calendar:
+    kind: calendar
+    enabled: true
+    times: ["08:30"]
+
+  newyork_open:
+    kind: newyork
+    enabled: true
+    times: ["13:00"]
+
+  # London x New York overlap. Base time 13:00 plus a 3 minute stagger so it
+  # does not land on top of the New York message. Set offset_minutes: 0 to send together.
+  overlap:
+    kind: overlap
+    enabled: true
+    times: ["13:00"]
+    offset_minutes: 3
+
+  # --- Funnel messages (rotate through the pools in messages/funnels.yaml) ---
+  mentorship_am:
+    kind: funnel_mentorship
+    enabled: true
+    days: [mon, wed, fri]
+    times: ["11:00"]
+
+  vip_am:
+    kind: funnel_vip
+    enabled: true
+    days: [tue, thu]
+    times: ["11:00"]
+
+  vip_pm:
+    kind: funnel_vip
+    enabled: true
+    times: ["18:00"]
+
+  # --- Social reminders (rotate through messages/socials.yaml) ---
+  social_midday:
+    kind: social
+    enabled: true
+    times: ["12:00"]
+
+  social_evening:
+    kind: social
+    enabled: true
+    times: ["20:00"]
+
+# News alerts: sent shortly before each High/Medium event from the calendar.
+alerts:
+  enabled: true
+  lead_minutes: 15          # alert when an event is this many minutes away (or less)
+  min_lead_minutes: 1       # do not alert if fewer minutes than this remain
+  group_same_time: true     # several events at the same minute = ONE alert message
+
+# Message types you can use in "kind":
+#   asia  london  newyork  overlap  news  calendar
+#   funnel_mentorship  funnel_vip  social
+# (alerts are controlled by the "alerts" block above)

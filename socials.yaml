@@ -1,0 +1,67 @@
+# RDFX bot: social follow reminders. Rotates in random order, no immediate repeat.
+#
+# Buttons: "link" is a key from config/links.yaml.
+#   optional: true  = if that link is empty, just leave the button off
+#   (without it, an empty link makes the whole message ineligible, so it is skipped)
+
+messages:
+  - id: instagram-keep-up
+    text: |
+      Keep up with RDFX on Instagram.📲
+
+      Daily Trading content, Market breakdowns and behind-the-scenes.
+
+      FOLLOW ON INSTAGRAM👇
+    buttons:
+      - label: "FOLLOW ON INSTAGRAM"
+        link: INSTAGRAM_URL
+
+  - id: instagram-new-content
+    text: |
+      NEW Content Is Going LIVE🌎
+
+      Make sure you're following the Instagram so you don't miss it.
+
+      FOLLOW RDFX ⬇️
+    buttons:
+      - label: "FOLLOW RDFX"
+        link: INSTAGRAM_URL
+
+  - id: tiktok-more-content
+    text: |
+      We're posting more trading content.
+
+      Follow RDFX on TikTok for quick breakdowns, trading clips and market insights.
+
+      FOLLOW ON TIKTOK ⬇️
+    buttons:
+      - label: "FOLLOW ON TIKTOK"
+        link: TIKTOK_URL
+
+  - id: all-platforms
+    text: |
+      🚨Don't just follow us here.
+
+      Connect with RDFX across all platforms.
+
+      FIND US ON INSTAGRAM⬇️
+    buttons:
+      - label: "INSTAGRAM"
+        link: INSTAGRAM_URL
+      - label: "YOUTUBE"
+        link: YOUTUBE_URL
+      - label: "TIKTOK"
+        link: TIKTOK_URL
+        optional: true
+
+  # DRAFT: wording written by the build, needs Ryan's approval before relying on it.
+  - id: youtube-watch-and-learn
+    text: |
+      Prefer to watch and learn? 🎥
+
+      Catch RDFX breakdowns and trading education on YouTube.
+
+      WATCH ON YOUTUBE⬇️
+    buttons:
+      - label: "WATCH ON YOUTUBE"
+        link: YOUTUBE_URL

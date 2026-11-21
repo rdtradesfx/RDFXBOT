@@ -1,0 +1,76 @@
+# RDFX bot: templates for the messages built from live data.
+# {curly_words} are filled in by the bot. Keep them exactly as written.
+# Formatting: **bold** or <b>bold</b> both work.
+
+# ---------------------------------------------------------------- daily news
+news:
+  body: |
+    🚨RDFX | DAILY MARKET NEWS 🚨🗞️
+
+    What's moving the markets?🌎
+
+    Good morning, team.
+    Here's your latest market news briefing:
+
+    • 🇺🇸 USD: {usd}
+    • 🥇 GOLD: {gold}
+    • 🇬🇧 GBP: {gbp}
+
+    Keep an eye on today's major economic releases and potential volatility.
+
+  # Shown for a section when there is no relevant headline.
+  defaults:
+    usd: "Latest developments affecting the dollar: nothing major so far, stay patient."
+    gold: "Latest developments affecting gold: nothing major so far, stay patient."
+    gbp: "Latest developments affecting sterling: nothing major so far, stay patient."
+
+  # One headline. The link goes to the original source; no article text is copied.
+  headline_item: '<a href="{url}">{title}</a> ({source})'
+  # What goes between two headlines in the same section.
+  headline_join: "\n   "
+
+# ------------------------------------------------------- economic calendar
+calendar:
+  header: |
+    📅 RDFX | ECONOMIC CALENDAR
+    🚨Today's Important News Events🗞️🚨
+
+  # One block per event.
+  event_block: |
+    •{flag} {title}
+    {impact} {time} UK time · Forecast: {forecast} · Previous: {previous}
+
+  footer: "Remember: High-impact news can increase spreads, volatility and slippage."
+
+  # Used instead of the event list when there is nothing High/Medium today.
+  empty_body: "No high-impact events scheduled today. Lower volatility expected, stay patient and trade your plan."
+
+  # Shown when the feed has no forecast/previous figure.
+  empty_value: "—"
+
+# ------------------------------------------------------------ news alerts
+# {minutes_text} is "15 minutes" when on time, or the real time left if GitHub ran late.
+alert:
+  single: |
+    ⏰ RDFX | NEWS ALERT
+
+    {impact} {flag} {title}
+    Releasing in {minutes_text} ({time} UK time)
+
+    Forecast: {forecast} · Previous: {previous}
+
+    High-impact news can increase spreads, volatility and slippage.
+
+  # Used only when several events release in the same minute.
+  group: |
+    ⏰ RDFX | NEWS ALERT
+
+    Releasing in {minutes_text} ({time} UK time)
+
+    {events}
+
+    High-impact news can increase spreads, volatility and slippage.
+
+  group_event: |
+    {impact} {flag} {title}
+    Forecast: {forecast} · Previous: {previous}

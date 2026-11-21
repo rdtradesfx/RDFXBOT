@@ -1,0 +1,123 @@
+# RDFX bot: data sources and keyword rules.
+
+# ---------------------------------------------------------------------------
+# Economic calendar (free ForexFactory weekly JSON feed, unofficial)
+# ---------------------------------------------------------------------------
+calendar:
+  url: "https://nfs.faireconomy.media/ff_calendar_thisweek.json"
+  refresh_minutes: 60      # never fetch more than once an hour
+  retry_minutes: 15        # after a failed fetch, wait this long before trying again
+  max_stale_hours: 48      # if the feed is down, keep using the last good copy for this long
+  cache_file: state/calendar_cache.json
+  overrides_file: events.json
+
+  # Currencies to include, with the flag shown in messages. Add/remove freely.
+  currencies:
+    USD: "🇺🇸"
+    GBP: "🇬🇧"
+    EUR: "🇪🇺"
+    JPY: "🇯🇵"
+
+  # Impact levels to include, with their emoji (High = red folder, Medium = yellow folder).
+  impacts:
+    High: "🔴"
+    Medium: "🟡"
+
+  # Event titles containing these words are shown in bold in the calendar message.
+  # (Speeches such as "FOMC Member X Speaks" are deliberately not bold.)
+  highlight_keywords:
+    - "CPI"
+    - "Inflation"
+    - "Non-Farm"
+    - "NFP"
+    - "Employment Change"
+    - "FOMC Statement"
+    - "FOMC Press Conference"
+    - "Federal Funds Rate"
+    - "Interest Rate"
+    - "Rate Decision"
+    - "Official Bank Rate"
+    - "GDP"
+    - "Unemployment"
+
+# ---------------------------------------------------------------------------
+# Daily market news (headlines + link only, never article text)
+# ---------------------------------------------------------------------------
+news:
+  max_age_hours: 24
+  max_per_section: 2
+  title_max_chars: 160
+
+  # Only RSS feeds listed here are ever read. "domains" lists the websites a
+  # headline link is allowed to point at (anything else is dropped).
+  # "auto_section": headlines from this feed with no keyword match still go to that section.
+  feeds:
+    - name: "Federal Reserve"
+      url: "https://www.federalreserve.gov/feeds/press_all.xml"
+      domains: ["federalreserve.gov"]
+      auto_section: usd
+    - name: "Federal Reserve Speeches"
+      url: "https://www.federalreserve.gov/feeds/speeches_and_testimony.xml"
+      domains: ["federalreserve.gov"]
+      auto_section: usd
+    - name: "Bank of England"
+      url: "https://www.bankofengland.co.uk/rss/news"
+      domains: ["bankofengland.co.uk"]
+      auto_section: gbp
+    - name: "BBC Business"
+      url: "https://feeds.bbci.co.uk/news/business/rss.xml"
+      domains: ["bbc.co.uk", "bbc.com"]
+    - name: "FXStreet"
+      url: "https://www.fxstreet.com/rss/news"
+      domains: ["fxstreet.com"]
+
+  # Headlines containing any of these are skipped (routine admin noise).
+  exclude_keywords:
+    - "Minutes of the"
+    - "Statistical Notice"
+    - "Green notice"
+    - "Court of Directors"
+    - "Enforcement"
+    - "Banknote"
+    - "Advisory Committee"
+    - "Silver price today"
+    - "Appointment of"
+
+  # Which section a headline goes in. "keywords" ignore capitals;
+  # "keywords_exact" must match capitals exactly (so "Fed" does not match "fed up").
+  sections:
+    usd:
+      keywords:
+        - "Federal Reserve"
+        - "FOMC"
+        - "US Dollar"
+        - "dollar index"
+        - "greenback"
+        - "Treasury"
+        - "Treasuries"
+        - "US inflation"
+        - "US CPI"
+        - "US jobs"
+        - "nonfarm"
+        - "payrolls"
+        - "Wall Street"
+      keywords_exact: ["Fed", "USD", "DXY"]
+    gold:
+      keywords:
+        - "gold"
+        - "bullion"
+        - "safe haven"
+        - "safe-haven"
+        - "XAU"
+      keywords_exact: []
+    gbp:
+      keywords:
+        - "Bank of England"
+        - "sterling"
+        - "British Pound"
+        - "UK inflation"
+        - "UK economy"
+        - "UK GDP"
+        - "gilt"
+        - "gilts"
+      keywords_exact: ["BoE", "GBP"]

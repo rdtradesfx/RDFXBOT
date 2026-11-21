@@ -1,0 +1,10 @@
+[project]
+name = "rdfx-bot"
+version = "1.0.0"
+description = "RDFX Telegram bot, scheduled from GitHub Actions"
+requires-python = ">=3.11"
+dependencies = ["PyYAML>=6.0", "tzdata>=2024.1"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

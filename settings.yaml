@@ -1,0 +1,32 @@
+# RDFX bot: global settings
+# Edit in the GitHub web editor, commit, and the next run picks it up.
+
+# KILL SWITCH. Set to false to stop ALL live sending (dry runs still work).
+enabled: true
+
+# All schedules use this timezone. GMT/BST is handled automatically.
+timezone: Europe/London
+
+# Days the bot may send. Weekend = no sends. Each message can narrow this further
+# in schedule.yaml, but cannot add days that are missing here.
+active_days: [mon, tue, wed, thu, fri]
+
+# Dates when NOTHING is ever sent (UK date). Two formats:
+#   "MM-DD"       repeats every year   e.g. "12-26"
+#   "YYYY-MM-DD"  one specific day     e.g. "2027-01-01"
+# 25 December is ALSO hard-coded in the program (src/rdfx_bot/safety.py), so
+# removing it from this list will not unblock it.
+blocked_dates:
+  - "12-25"
+  # - "12-26"
+  # - "01-01"
+
+# Seconds to wait between two messages sent in the same run (keeps them from
+# landing as one blob and keeps Telegram happy).
+send_gap_seconds: 4
+
+# How many days of "already sent" history to keep in state/sent.json.
+retention_days: 14
+
+# Where the bot remembers what it has sent (committed back by the workflow).
+state_file: state/sent.json

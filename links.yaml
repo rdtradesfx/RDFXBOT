@@ -1,0 +1,17 @@
+# RDFX bot: ALL links live here. Change a link once and every message updates.
+# Links must start with https://
+# Leave a link empty ("") to switch off every message/button that needs it.
+
+# VIP opens a direct Telegram chat (the button still reads JOIN NOW).
+VIP_URL: "https://t.me/RDFX6"
+
+MENTORSHIP_URL: "https://tally.so/r/wdBLED"
+
+# Check this points at the right Instagram account before going live.
+INSTAGRAM_URL: "https://www.instagram.com/ryan_drewery6/"
+
+YOUTUBE_URL: "https://www.youtube.com/@RyanDreweryFx"
+
+# TODO: paste the TikTok link here. While empty, TikTok-only messages are skipped
+# and the TikTok button is left off everywhere, with no errors.
+TIKTOK_URL: ""

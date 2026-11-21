@@ -1,0 +1,86 @@
+# RDFX bot: funnel messages. Each pool rotates in random order with no
+# immediate repeat. Buttons take their link from config/links.yaml.
+#
+# To add a message: copy a block, give it a new unique "id", edit the text.
+# To remove one: delete its block.
+
+mentorship:
+  buttons:
+    - label: "APPLY NOW"
+      link: MENTORSHIP_URL
+  messages:
+    - id: mentorship-process
+      text: |
+        You don't need another strategy. You need a process you can execute consistently.
+
+        Let's build YOU one.
+
+        APPLY FOR MENTORSHIP⬇️
+    - id: mentorship-application
+      text: |
+        Looking to take trading seriously and develop long-term consistency?
+
+        RDFX 1-1 mentorship is application-only.
+
+        APPLY NOW👇
+
+vip:
+  buttons:
+    - label: "JOIN NOW"
+      link: VIP_URL
+  messages:
+    - id: vip-next-step
+      text: |
+        Your next step starts with getting involved.
+
+        Data Backed Trade ideas ✅
+        Market breakdowns ✅
+
+        + MORE inside RDFX VIP🏆
+
+        PRESS THE JOIN NOW BUTTON TO GET ACCESS↗️
+    - id: vip-want-access
+      text: |
+        Want access to our trade ideas, market analysis and VIP community? 😱
+
+        Get yourself inside RDFX VIP.
+
+        PRESS THE JOIN NOW BUTTON TO GET ACCESS↗️
+    - id: vip-markets-moving
+      text: |
+        🚨The Markets are moving every day.
+
+        Get access to the trade ideas and analysis we're sharing inside RDFX VIP.
+
+        JOIN VIP NOW
+
+        PRESS THE JOIN NOW BUTTON TO GET ACCESS↗️
+    - id: vip-free-content
+      text: |
+        Already following our FREE content?
+
+        Take the next step and get access to the VIP side of RDFX.
+
+        PROVEN TRADE IDEAS!
+        MARKET INSIGHTS
+        LIVE TRADING CALLS
+
+        GET VIP ACCESS NOW
+
+        PRESS THE JOIN NOW BUTTON TO GET ACCESS↗️
+    - id: vip-more-inside
+      text: |
+        🚨There's more happening inside RDFX than what you see on socials.🥷
+
+        Get access to the VIP community. 🎫
+
+        PRESS THE JOIN NOW BUTTON TO GET ACCESS↗️
+    - id: vip-considering
+      text: |
+        🚨If you've been considering joining VIP, take a look.
+
+        Everything you need to get started is pinned.
+
+        JOIN RDFX VIP 🎫
+
+        PRESS THE JOIN NOW BUTTON TO GET ACCESS↗️
