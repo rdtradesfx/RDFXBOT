@@ -14,31 +14,20 @@ london:
 
 newyork:
   text: |
-    RDFX: NEW YORK SESSION OPEN🇺🇸🗽
+    <b>RDFX: NEW YORK SESSION OPEN<b>🇺🇸🗽
 
     New York Session is now OPEN.
 
     US liquidity is entering the market. Expect potential volatility across USD pairs and Gold.
 
-       <b>RDFX | PRECISION MEETS PROFIT.</b> 
-
-overlap:
+       <b>RDFX | PRECISION MEETS PROFIT.</b>
+       
+       asia:
   text: |
-    🔥 <b>RDFX: LONDON x NEW YORK OVERLAP</b>
-
-    The busiest trading window of the day is underway.👌🏻
-
-    **London 🇬🇧 + New York 🇺🇸 are both LIVE.**
-
-    This period often brings increased liquidity and volatility.
-
-    **RDFX | Precision Meets Profit!** 🥇
-
-asia:
-  text: |
-    **RDFX: ASIAN SESSION OPEN**🌎
+    <b>RDFX: ASIAN SESSION OPEN<b>🌏
 
     Asia is now LIVE. 🇯🇵
 
     The Asian session is underway.
-*RDFX | Precision Meets Profit!** 🥇
+
+    <b>RDFX | Precision Meets Profit!<b> 🥇
