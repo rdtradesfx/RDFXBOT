@@ -1,0 +1,119 @@
+{
+ "events": [
+  {
+   "currency": "EUR",
+   "datetime": "2026-11-23T08:15:00+00:00",
+   "forecast": "49.8",
+   "impact": "Medium",
+   "previous": "49.3",
+   "title": "French Flash Manufacturing PMI"
+  },
+  {
+   "currency": "EUR",
+   "datetime": "2026-11-23T08:15:00+00:00",
+   "forecast": "47.4",
+   "impact": "Medium",
+   "previous": "48.4",
+   "title": "French Flash Services PMI"
+  },
+  {
+   "currency": "EUR",
+   "datetime": "2026-11-23T08:30:00+00:00",
+   "forecast": "54.1",
+   "impact": "Medium",
+   "previous": "54.2",
+   "title": "German Flash Manufacturing PMI"
+  },
+  {
+   "currency": "EUR",
+   "datetime": "2026-11-23T08:30:00+00:00",
+   "forecast": "52.4",
+   "impact": "Medium",
+   "previous": "51.7",
+   "title": "German Flash Services PMI"
+  },
+  {
+   "currency": "GBP",
+   "datetime": "2026-11-23T09:30:00+00:00",
+   "forecast": "53.0",
+   "impact": "Medium",
+   "previous": "52.8",
+   "title": "Flash Manufacturing PMI"
+  },
+  {
+   "currency": "GBP",
+   "datetime": "2026-11-23T09:30:00+00:00",
+   "forecast": "53.0",
+   "impact": "Medium",
+   "previous": "53.1",
+   "title": "Flash Services PMI"
+  },
+  {
+   "currency": "USD",
+   "datetime": "2026-11-23T14:45:00+00:00",
+   "forecast": "54.5",
+   "impact": "Medium",
+   "previous": "56.0",
+   "title": "Flash Manufacturing PMI"
+  },
+  {
+   "currency": "USD",
+   "datetime": "2026-11-23T14:45:00+00:00",
+   "forecast": "55.6",
+   "impact": "Medium",
+   "previous": "57.9",
+   "title": "Flash Services PMI"
+  },
+  {
+   "currency": "USD",
+   "datetime": "2026-11-24T15:00:00+00:00",
+   "forecast": "92.1",
+   "impact": "Medium",
+   "previous": "91.7",
+   "title": "CB Consumer Confidence"
+  },
+  {
+   "currency": "USD",
+   "datetime": "2026-11-25T13:30:00+00:00",
+   "forecast": "0.3%",
+   "impact": "High",
+   "previous": "0.3%",
+   "title": "Core PCE Price Index m/m"
+  },
+  {
+   "currency": "USD",
+   "datetime": "2026-11-25T13:30:00+00:00",
+   "forecast": "3.5%",
+   "impact": "High",
+   "previous": "3.4%",
+   "title": "Prelim GDP q/q"
+  },
+  {
+   "currency": "USD",
+   "datetime": "2026-11-25T13:30:00+00:00",
+   "forecast": "2.3%",
+   "impact": "Medium",
+   "previous": "2.3%",
+   "title": "Prelim GDP Price Index q/q"
+  },
+  {
+   "currency": "USD",
+   "datetime": "2026-11-25T13:30:00+00:00",
+   "forecast": "201K",
+   "impact": "Medium",
+   "previous": "203K",
+   "title": "Unemployment Claims"
+  },
+  {
+   "currency": "JPY",
+   "datetime": "2026-11-26T23:30:00+00:00",
+   "forecast": "2.9%",
+   "impact": "Medium",
+   "previous": "2.6%",
+   "title": "Tokyo Core CPI y/y"
+  }
+ ],
+ "fetched_at": "2026-11-23T00:10:46+00:00",
+ "last_attempt": "2026-11-23T00:10:46+00:00",
+ "last_ok": true
+}
