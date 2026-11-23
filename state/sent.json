@@ -4,11 +4,13 @@
     "9b3e4dbe7d31": "2026-11-23T08:26:23+00:00"
   },
   "rotation": {
-    "funnel_mentorship": "mentorship-process"
+    "funnel_mentorship": "mentorship-process",
+    "social": "all-platforms"
   },
   "sent": {
     "asia_open@2026-11-23T00:00": "2026-11-23T00:10:46+00:00",
     "london_open@2026-11-23T08:00": "2026-11-23T08:26:23+00:00",
-    "mentorship_am@2026-11-23T11:00": "2026-11-23T11:39:33+00:00"
+    "mentorship_am@2026-11-23T11:00": "2026-11-23T11:39:33+00:00",
+    "social_midday@2026-11-23T12:00": "2026-11-23T12:42:47+00:00"
   }
 }
