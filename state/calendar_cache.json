@@ -67,7 +67,7 @@
   {
    "currency": "USD",
    "datetime": "2026-11-24T15:00:00+00:00",
-   "forecast": "92.1",
+   "forecast": "92.4",
    "impact": "Medium",
    "previous": "91.7",
    "title": "CB Consumer Confidence"
@@ -99,13 +99,13 @@
   {
    "currency": "JPY",
    "datetime": "2026-11-26T23:30:00+00:00",
-   "forecast": "2.9%",
+   "forecast": "3.0%",
    "impact": "Medium",
    "previous": "2.6%",
    "title": "Tokyo Core CPI y/y"
   }
  ],
- "fetched_at": "2026-11-23T20:13:19+00:00",
- "last_attempt": "2026-11-23T20:13:19+00:00",
+ "fetched_at": "2026-11-23T21:53:17+00:00",
+ "last_attempt": "2026-11-23T21:53:17+00:00",
  "last_ok": true
 }
