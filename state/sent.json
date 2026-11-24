@@ -6,7 +6,7 @@
   "rotation": {
     "funnel_mentorship": "mentorship-process",
     "funnel_vip": "vip-considering",
-    "social": "youtube-watch-and-learn"
+    "social": "all-platforms"
   },
   "sent": {
     "asia_open@2026-11-23T00:00": "2026-11-23T00:10:46+00:00",
@@ -16,6 +16,7 @@
     "mentorship_am@2026-11-23T11:00": "2026-11-23T11:39:33+00:00",
     "social_evening@2026-11-23T20:00": "2026-11-23T20:13:19+00:00",
     "social_midday@2026-11-23T12:00": "2026-11-23T12:42:47+00:00",
+    "social_midday@2026-11-24T12:00": "2026-11-24T12:04:21+00:00",
     "vip_am@2026-11-24T11:00": "2026-11-24T11:09:07+00:00",
     "vip_pm@2026-11-23T18:00": "2026-11-23T18:11:22+00:00"
   }
