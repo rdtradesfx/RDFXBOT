@@ -5,7 +5,7 @@
   },
   "rotation": {
     "funnel_mentorship": "mentorship-process",
-    "funnel_vip": "vip-considering",
+    "funnel_vip": "vip-free-content",
     "social": "all-platforms"
   },
   "sent": {
@@ -19,6 +19,7 @@
     "social_midday@2026-11-23T12:00": "2026-11-23T12:42:47+00:00",
     "social_midday@2026-11-24T12:00": "2026-11-24T12:04:21+00:00",
     "vip_am@2026-11-24T11:00": "2026-11-24T11:09:07+00:00",
-    "vip_pm@2026-11-23T18:00": "2026-11-23T18:11:22+00:00"
+    "vip_pm@2026-11-23T18:00": "2026-11-23T18:11:22+00:00",
+    "vip_pm@2026-11-24T18:00": "2026-11-24T18:25:42+00:00"
   }
 }
