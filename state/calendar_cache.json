@@ -119,9 +119,17 @@
    "impact": "Medium",
    "previous": "2.3%",
    "title": "Prelim GDP Price Index q/q"
+  },
+  {
+   "currency": "GBP",
+   "datetime": "2026-11-25T14:15:00+00:00",
+   "forecast": "",
+   "impact": "Medium",
+   "previous": "",
+   "title": "Monetary Policy Report Hearings"
   }
  ],
- "fetched_at": "2026-11-25T13:50:14+00:00",
- "last_attempt": "2026-11-25T13:50:14+00:00",
+ "fetched_at": "2026-11-25T15:46:01+00:00",
+ "last_attempt": "2026-11-25T15:46:01+00:00",
  "last_ok": true
 }
