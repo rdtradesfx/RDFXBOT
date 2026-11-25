@@ -1,51 +1,63 @@
 # RDFX bot: templates for the messages built from live data.
 # {curly_words} are filled in by the bot. Keep them exactly as written.
-# Formatting: **bold** or <b>bold</b> both work.
+#
+# BOLD: put **two stars** either side of the words. Example: **this is bold**
+# (Do not use <b> tags: if one is not closed properly the whole message breaks.)
+#
+# Careful with spacing: every line inside a "|" block must start with the SAME number of spaces.
 
 # ---------------------------------------------------------------- daily news
 news:
   body: |
-    <b>🚨RDFX|DAILY MARKET NEWS!<b>🚨
+    **🚨RDFX | DAILY MARKET NEWS 🚨**
 
-    WHAT'S MOVING THE MARKETS?🌎
+    **WHAT'S MOVING THE MARKETS? 🌎**
 
     Good morning, team.
     Here's your latest market news briefing:
 
-   <b> • 🇺🇸 USD:<b> {usd}
-    <b>• 🥇 GOLD:<b> {gold}
-    <b>• 🇬🇧 GBP:<b> {gbp}
+    {sections}
 
-    <b>Keep an eye on today's major economic releases and potential volatility.<b>
+    **Keep an eye on today's major economic releases and potential volatility.**
 
-  # Shown for a section when there is no relevant headline.
-  defaults:
-    usd: "Latest developments affecting the dollar: nothing major so far, stay patient."
-    
-    gold: "Latest developments affecting gold: nothing major so far, stay patient."
-    
-    gbp: "Latest developments affecting sterling: nothing major so far, stay patient."
+  # Used when there is no headline and no event for any market.
+  none_body: |
+    **🚨RDFX | DAILY MARKET NEWS 🚨**
 
-  # One headline. The link goes to the original source; no article text is copied.
-  headline_item: '<a href="{url}">{title}</a> ({source})'
+    **WHAT'S MOVING THE MARKETS? 🌎**
+
+    Good morning, team.
+    Nothing major on gold or the main pairs overnight, stay patient.
+
+    **Keep an eye on today's major economic releases and potential volatility.**
+
+  # The bold title above each market. A market with no headline shows its events for the day instead.
+  section_titles:
+    gold: "**• 🥇 GOLD**"
+    usd: "**• 🇺🇸 USD**"
+    eur: "**• 🇪🇺 EUR**"
+    gbp: "**• 🇬🇧 GBP**"
+    aud: "**• 🇦🇺 AUD**"
+
+  # One headline: text and source name only, no link.
+  headline_item: '{title} ({source})'
   # What goes between two headlines in the same section.
-  headline_join: "\n   "
+  headline_join: "\n"
 
 # ------------------------------------------------------- economic calendar
 calendar:
   header: |
-    <b>📅 RDFX | ECONOMIC CALENDAR! <b>
-    <b>🚨Today's Important News Events<b>🗞️🚨
+    **📅 RDFX | ECONOMIC CALENDAR**
+    **🚨 Today's Important News Events 🗞️🚨**
 
-  # One block per event.
-  event_block: |
-    •{flag} {title}
-    {impact} {time} UK time · Forecast: {forecast} · Previous: {previous}
+  # One line per event. The time is bold. (F = forecast, P = previous)
+  event_block: "{impact} **{time}** {flag} {title} · F {forecast} · P {previous}"
+  event_join: "\n"
 
-  footer: <b>"Remember: High-impact news can increase spreads, volatility and slippage."<b>
+  footer: "**Remember: news events can increase spreads, volatility and slippage.**"
 
-  # Used instead of the event list when there is nothing High/Medium today.
-  empty_body: "No high-impact events scheduled today. Lower volatility expected, stay patient and trade your plan."
+  # Used instead of the event list when there is nothing red or orange today.
+  empty_body: "**No red or orange news events scheduled today.** Lower volatility expected, stay patient and trade your plan."
 
   # Shown when the feed has no forecast/previous figure.
   empty_value: "—"
@@ -54,25 +66,25 @@ calendar:
 # {minutes_text} is "15 minutes" when on time, or the real time left if GitHub ran late.
 alert:
   single: |
-    <b>⏰ RDFX | NEWS ALERT! <b>
+    **⏰ RDFX | NEWS ALERT ⏰**
 
-    {impact} {flag} {title}
-    Releasing in {minutes_text} ({time} UK time)
+    **{impact} {flag} {title}**
+    Releasing in **{minutes_text}** ({time} UK time)
 
     Forecast: {forecast} · Previous: {previous}
 
-    High-impact news can increase spreads, volatility and slippage.
+    **News events can increase spreads, volatility and slippage.**
 
   # Used only when several events release in the same minute.
   group: |
-    <b>⏰ RDFX | NEWS ALERT! <b>
+    **⏰ RDFX | NEWS ALERT ⏰**
 
-    Releasing in {minutes_text} ({time} UK time)
+    Releasing in **{minutes_text}** ({time} UK time)
 
     {events}
 
-    <b>High-impact news can increase spreads, volatility and slippage<b>.
+    **News events can increase spreads, volatility and slippage.**
 
   group_event: |
-    {impact} {flag} {title}
+    **{impact} {flag} {title}**
     Forecast: {forecast} · Previous: {previous}
