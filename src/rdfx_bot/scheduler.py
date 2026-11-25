@@ -11,7 +11,7 @@ import logging
 import re
 from dataclasses import dataclass, field
 from datetime import date, datetime, time, timedelta, timezone
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 from .safety import is_blocked
 
@@ -45,9 +45,13 @@ def parse_hhmm(value) -> time:
     return time(hours, minutes)
 
 
-def local_dt(day: date, at: time, tz: ZoneInfo, offset_minutes: int = 0) -> datetime:
-    """A UK wall-clock time on `day`, optionally shifted later by offset_minutes."""
-    aware = datetime.combine(day, at, tzinfo=tz)
+def local_dt(day: date, at: time, tz: ZoneInfo, offset_minutes: int = 0, source_tz: ZoneInfo | None = None) -> datetime:
+    """The moment `at` on `day`, shown in UK time, optionally shifted later by offset_minutes.
+
+    `at` is a wall-clock time in `source_tz` (default: UK). Using a different source_tz, e.g.
+    Asia/Tokyo, makes the UK time move with the clocks change automatically.
+    """
+    aware = datetime.combine(day, at, tzinfo=source_tz or tz)
     return (aware.astimezone(timezone.utc) + timedelta(minutes=offset_minutes)).astimezone(tz)
 
 
@@ -84,8 +88,15 @@ def due_slots(now: datetime, schedule: dict, settings: dict, tz: ZoneInfo) -> li
             except (TypeError, ValueError) as exc:
                 log.error("Schedule entry '%s' skipped: %s", entry_id, exc)
                 continue
+            entry_tz = tz
+            if entry.get("tz"):
+                try:
+                    entry_tz = ZoneInfo(str(entry["tz"]))
+                except (ZoneInfoNotFoundError, ValueError):
+                    log.error("Schedule entry '%s' skipped: unknown timezone '%s'", entry_id, entry.get("tz"))
+                    continue
             for at in times:
-                when = local_dt(day, at, tz, offset)
+                when = local_dt(day, at, tz, offset, entry_tz)
                 if when <= now_local < when + catch_up:
                     slots.append(
                         Slot(

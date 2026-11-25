@@ -5,10 +5,11 @@ from __future__ import annotations
 import re
 
 from ..context import Context
-from ..models import Message, RetryLater
+from ..models import Button, Message, RetryLater
 from ..services.calendar_feed import Event, FeedUnavailable
 from ..textutil import esc, render
-from .registry import register
+from ._extras import extra
+from .registry import register, register_fallback
 
 
 def flag_for(ctx: Context, currency: str) -> str:
@@ -64,6 +65,28 @@ def build_calendar(ctx: Context) -> Message | None:
         body = esc(str(tpl["empty_body"]))
         return Message(text=f"{header}\n\n{body}", kind="calendar")
 
-    blocks = [render(str(tpl["event_block"]), **event_values(ctx, e)) for e in events]
+    joiner = str(tpl.get("event_join", "\n"))
+    blocks = [render(str(tpl["event_block"]), **event_values(ctx, e)).strip() for e in events]
     footer = render(str(tpl["footer"]))
-    return Message(text="\n\n".join([header, *blocks, footer]), kind="calendar")
+    return Message(text=f"{header.strip()}\n\n{joiner.join(blocks)}\n\n{footer}", kind="calendar")
+
+
+DEFAULT_FALLBACK = """📅 RDFX | ECONOMIC CALENDAR
+
+Today's calendar could not be loaded right now.
+
+Check the calendar for today's high-impact events before you trade.
+
+Remember: High-impact news can increase spreads, volatility and slippage."""
+
+
+@register_fallback("calendar")
+def build_calendar_fallback(ctx: Context) -> Message | None:
+    """Plan B when the feed is down for the whole window: say so, with one button to a live calendar."""
+    url = ctx.cfg.link("CALENDAR_URL") or "https://www.forexfactory.com/calendar"
+    label = extra(ctx, "calendar", "fallback_button", "OPEN CALENDAR")
+    return Message(
+        text=render(extra(ctx, "calendar", "fallback", DEFAULT_FALLBACK)),
+        buttons=[Button(label, url)],
+        kind="calendar",
+    )

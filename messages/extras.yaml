@@ -1,0 +1,32 @@
+# RDFX bot: automatic extras (plan-B messages and the "Watch today" lines).
+# Edit the wording freely. **bold** works. Keep {curly_words} exactly as written.
+
+news:
+  # Added under each news section when the calendar has a High/Medium event for that currency today.
+  # {events} is the list of events. Gold uses the US dollar events.
+  watch_line: "📌 Watch today: {events}"
+  # Shown for a market with no headline today, listing its red/orange events instead.
+  day_line: "📅 Today: {events}"
+  watch_event: "{impact} {title} ({time} UK)"
+
+  # Sent INSTEAD of nothing if every news feed is down for the whole window (last 15 minutes of it).
+  fallback: |
+    **📰 RDFX | DAILY MARKET NEWS**
+
+    Good morning.
+
+    Our headline feeds are unavailable right now, so there is no briefing this morning.
+
+    Check your usual sources before you trade and keep an eye on today's economic releases.
+
+calendar:
+  # Sent INSTEAD of nothing if the calendar feed is down for the whole window (last 15 minutes of it).
+  fallback: |
+    **📅 RDFX | ECONOMIC CALENDAR**
+
+    Today's calendar could not be loaded right now.
+
+    Check the calendar for today's red and orange events before you trade.
+
+    Expect volatility and wider spreads around releases.
+  fallback_button: "OPEN CALENDAR"

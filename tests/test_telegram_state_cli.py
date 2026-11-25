@@ -178,7 +178,7 @@ def test_state_file_is_stable_and_readable_json(tmp_path):
     state.mark_sent("a", NOW)
     state.save()
     data = json.loads((tmp_path / "s.json").read_text())
-    assert list(data) == ["alerts", "rotation", "sent"] and list(data["sent"]) == ["a", "b"]
+    assert list(data) == ["alerts", "notices", "rotation", "sent"] and list(data["sent"]) == ["a", "b"]
 
 
 # --------------------------------------------------------------------------- config checks
@@ -235,7 +235,7 @@ def test_cli_dry_run_at_weekend_prints_nothing(cfg, offline, capsys):
 def test_cli_preview_prints_every_message_type(cfg, offline, capsys):
     assert cli.main(["--root", str(cfg.root), "preview"]) == 0
     out = capsys.readouterr().out
-    for fragment in ("ASIAN SESSION OPEN", "LONDON SESSION OPEN", "NEW YORK SESSION OPEN", "OVERLAP", "APPLY NOW", "JOIN NOW", "NEWS ALERT"):
+    for fragment in ("ASIAN SESSION OPEN", "LONDON SESSION OPEN", "NEW YORK SESSION OPEN", "OVERLAP", "Apply for mentorship", "VIP", "NEWS ALERT"):
         assert fragment in out
 
 

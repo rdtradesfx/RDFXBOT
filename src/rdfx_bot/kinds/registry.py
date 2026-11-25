@@ -9,6 +9,8 @@ from ..models import Message
 
 Builder = Callable[[Context], "Message | None"]
 KINDS: dict[str, Builder] = {}
+# Optional "plan B" builders: used when a message's data is unavailable at the end of its window.
+FALLBACKS: dict[str, Builder] = {}
 
 
 def register(name: str):
@@ -18,6 +20,16 @@ def register(name: str):
         if name in KINDS:
             raise ValueError(f"message type '{name}' is registered twice")
         KINDS[name] = func
+        return func
+
+    return decorator
+
+
+def register_fallback(name: str):
+    """Decorator: a plan-B message for kind `name`, sent only if the normal one cannot be built in time."""
+
+    def decorator(func: Builder) -> Builder:
+        FALLBACKS[name] = func
         return func
 
     return decorator

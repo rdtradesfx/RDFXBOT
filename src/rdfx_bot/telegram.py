@@ -145,3 +145,30 @@ class TelegramClient:
                 continue
             raise TelegramError(self._redact(f"Telegram refused the message (HTTP {status}): {description}"))
         raise TelegramError("Telegram did not accept the message after several tries")
+
+    # -- private chat with the bot owner (signals in, failure notices out) -----
+    def get_updates(self, offset: int | None = None, limit: int = 100) -> list[dict]:
+        """New messages sent to the bot. Telegram forgets an update once a later call passes offset=its id+1."""
+        payload: dict = {"timeout": 0, "limit": limit, "allowed_updates": ["message"]}
+        if offset is not None:
+            payload["offset"] = offset
+        try:
+            status, body = self._post(f"{API}/bot{self._token}/getUpdates", payload, 20)
+        except Exception as exc:  # noqa: BLE001
+            raise TelegramError(self._redact(f"network error ({type(exc).__name__})")) from None
+        if status != 200 or not body.get("ok"):
+            raise TelegramError(self._redact(f"Telegram refused getUpdates (HTTP {status}): {body.get('description', '')}"))
+        return list(body.get("result") or [])
+
+    def send_private(self, chat_id: str | int, text: str) -> bool:
+        """Plain-text message to one person (not the channel). Never raises; returns True if delivered.
+
+        Not date-blocked: it is a private note to the owner, not a post to the channel.
+        """
+        payload = {"chat_id": str(chat_id), "text": text[:MAX_LEN], "link_preview_options": {"is_disabled": True}}
+        try:
+            self._send_payload(payload)
+        except TelegramError as exc:
+            log.warning("Could not send a private message: %s", exc)
+            return False
+        return True

@@ -22,7 +22,7 @@ SAMPLE = [
     ff("Core CPI m/m", "USD", "2026-11-23T08:30:00-05:00", "High", "0.3%", ""),  # 13:30 UK, no previous
     ff("Federal Reserve Speaker", "USD", "2026-11-23T12:00:00-05:00", "Medium"),  # 17:00 UK
     ff("Consumer Sentiment", "USD", "2026-11-23T10:00:00-05:00", "Low", "50", "49"),  # dropped: low impact
-    ff("GDP q/q", "AUD", "2026-11-23T01:30:00-05:00", "High", "0.5%", "0.4%"),  # dropped: currency
+    ff("GDP q/q", "CAD", "2026-11-23T01:30:00-05:00", "High", "0.5%", "0.4%"),  # dropped: currency
     ff("Bank Holiday", "JPY", "2026-11-23T00:00:00-05:00", "Holiday"),  # dropped: holiday
     ff("Tomorrow thing", "EUR", "2026-11-24T04:00:00-05:00", "Medium", "1", "2"),  # tomorrow
 ]
@@ -39,6 +39,11 @@ def test_only_high_and_medium_in_chosen_currencies_are_kept(cfg):
     assert titles == {"CPI y/y", "CPI m/m", "Core CPI m/m", "Federal Reserve Speaker", "Tomorrow thing"}
 
 
+def test_aud_is_included_and_jpy_is_not(cfg):
+    items = [ff("RBA Rate Decision", "AUD", "2026-11-23T01:30:00-05:00", "High"), ff("BoJ Rate", "JPY", "2026-11-23T01:30:00-05:00", "High")]
+    assert [e.title for e in service(cfg, MONDAY, items).events()] == ["RBA Rate Decision"]
+
+
 def test_times_are_converted_to_uk_time(cfg):
     by_title = {e.title: e for e in service(cfg, MONDAY).events()}
     assert f"{by_title['CPI m/m'].start:%H:%M}" == "13:30"  # 08:30 New York
@@ -46,14 +51,14 @@ def test_times_are_converted_to_uk_time(cfg):
 
 
 def test_currencies_are_configurable(cfg):
-    cfg.sources["calendar"]["currencies"] = {"AUD": "🇦🇺"}
+    cfg.sources["calendar"]["currencies"] = {"CAD": "🇨🇦"}
     assert [e.title for e in service(cfg, MONDAY).events()] == ["GDP q/q"]
 
 
 def test_impact_emoji_mapping(cfg, make_ctx):
     ctx = make_ctx(MONDAY)
     assert impact_emoji(ctx, "High") == "🔴"
-    assert impact_emoji(ctx, "Medium") == "🟡"
+    assert impact_emoji(ctx, "Medium") == "🟠"
     assert impact_emoji(ctx, "high") == "🔴"
 
 
@@ -62,12 +67,13 @@ def test_impact_emoji_mapping(cfg, make_ctx):
 def test_calendar_message_layout(cfg, make_ctx):
     ctx = make_ctx(MONDAY, calendar_fetcher=calendar_fetch(SAMPLE))
     text = build_calendar(ctx).text
-    assert text.startswith("📅 RDFX | ECONOMIC CALENDAR\n🚨Today's Important News Events🗞️🚨\n\n")
-    assert "•🇬🇧 <b>CPI y/y</b>\n🔴 09:00 UK time · Forecast: 3.8% · Previous: 3.6%" in text
-    assert "•🇺🇸 <b>CPI m/m</b>\n🔴 13:30 UK time · Forecast: 0.3% · Previous: 0.2%" in text
-    assert "•🇺🇸 Federal Reserve Speaker\n🟡 17:00 UK time · Forecast: — · Previous: —" in text
-    assert "Core CPI m/m</b>\n🔴 13:30 UK time · Forecast: 0.3% · Previous: —" in text
-    assert text.endswith("Remember: High-impact news can increase spreads, volatility and slippage.")
+    assert text.startswith("<b>📅 RDFX | ECONOMIC CALENDAR</b>\n\nKey events today (UK time):\n\n")
+    assert "🔴 <b>09:00</b> 🇬🇧 <b>CPI y/y</b> · F 3.8% · P 3.6%" in text
+    assert "🔴 <b>13:30</b> 🇺🇸 <b>CPI m/m</b> · F 0.3% · P 0.2%" in text
+    assert "🟠 <b>17:00</b> 🇺🇸 Federal Reserve Speaker · F — · P —" in text
+    assert "<b>Core CPI m/m</b> · F 0.3% · P —" in text
+    assert "\n\n🔴" not in text.split("(UK time):\n\n", 1)[1].rsplit("\n\n", 1)[0]  # events are one tight block
+    assert text.endswith("Expect volatility and wider spreads around these releases.")
     assert "Tomorrow thing" not in text and "Consumer Sentiment" not in text
     assert text.index("09:00") < text.index("13:30") < text.index("17:00")  # in time order
     assert validate_html(text) == []
@@ -76,8 +82,8 @@ def test_calendar_message_layout(cfg, make_ctx):
 def test_no_events_today_says_so_clearly(cfg, make_ctx):
     ctx = make_ctx(MONDAY, calendar_fetcher=calendar_fetch([]))
     text = build_calendar(ctx).text
-    assert "No high-impact events scheduled today. Lower volatility expected, stay patient and trade your plan." in text
-    assert text.startswith("📅 RDFX | ECONOMIC CALENDAR")
+    assert "No red or orange news events scheduled today. Stay patient and trade your plan." in text
+    assert text.startswith("<b>📅 RDFX | ECONOMIC CALENDAR</b>")
 
 
 def test_event_titles_cannot_inject_markup(cfg, make_ctx):
@@ -126,14 +132,15 @@ def test_failed_fetch_is_not_retried_for_15_minutes_and_stale_copy_is_used(cfg):
         calls.append(url)
         raise OSError("down")
 
+    backups = 1 + len(cfg.sources["calendar"].get("backup_urls") or [])  # main address + each backup
     later = MONDAY + timedelta(minutes=70)
     svc = CalendarService(cfg, later, persist=True, fetch=failing)
     assert len(svc.events()) == 5 and svc.status == "stale"
-    assert len(calls) == 2
+    assert len(calls) == 1 + backups
     CalendarService(cfg, later + timedelta(minutes=5), persist=True, fetch=failing).events()
-    assert len(calls) == 2  # inside the 15 minute back-off: no new request
+    assert len(calls) == 1 + backups  # inside the 15 minute back-off: no new request
     CalendarService(cfg, later + timedelta(minutes=16), persist=True, fetch=failing).events()
-    assert len(calls) == 3
+    assert len(calls) == 1 + 2 * backups
 
 
 def test_stale_copy_is_dropped_after_max_stale_hours(cfg):
@@ -162,18 +169,18 @@ def test_alert_fires_inside_the_15_minute_window_with_exact_wording(make_ctx):
     _ctx, msgs = alerts_at(make_ctx, uk(2026, 11, 23, 13, 15))
     assert len(msgs) == 1
     assert msgs[0].text == (
-        "⏰ RDFX | NEWS ALERT\n\n"
-        "🔴 🇺🇸 US CPI y/y\n"
-        "Releasing in 15 minutes (13:30 UK time)\n\n"
+        "<b>⏰ RDFX | NEWS ALERT</b>\n\n"
+        "<b>🔴 🇺🇸 US CPI y/y</b>\n"
+        "Releasing in <b>15 minutes</b> (13:30 UK)\n\n"
         "Forecast: 3.1% · Previous: 3.0%\n\n"
-        "High-impact news can increase spreads, volatility and slippage."
+        "Expect volatility and wider spreads."
     )
     assert validate_html(msgs[0].text) == []
 
 
 def test_alert_is_honest_about_time_left_when_the_run_is_late(make_ctx):
-    assert "Releasing in 10 minutes" in alerts_at(make_ctx, uk(2026, 11, 23, 13, 20))[1][0].text
-    assert "Releasing in 2 minutes" in alerts_at(make_ctx, uk(2026, 11, 23, 13, 28))[1][0].text
+    assert "Releasing in <b>10 minutes</b>" in alerts_at(make_ctx, uk(2026, 11, 23, 13, 20))[1][0].text
+    assert "Releasing in <b>2 minutes</b>" in alerts_at(make_ctx, uk(2026, 11, 23, 13, 28))[1][0].text
 
 
 def test_no_alert_too_early_or_for_events_already_released(make_ctx):
@@ -193,7 +200,7 @@ def test_alert_sent_once_per_event(make_ctx):
 def test_medium_events_get_yellow_and_one_alert_per_time_slot(make_ctx):
     items = [ff("Federal Reserve Speaker", "USD", "2026-11-23T12:00:00-05:00", "Medium")]  # 17:00 UK
     msgs = alerts_at(make_ctx, uk(2026, 11, 23, 16, 45), items)[1]
-    assert "🟡 🇺🇸 Federal Reserve Speaker" in msgs[0].text
+    assert "🟠 🇺🇸 Federal Reserve Speaker" in msgs[0].text
     assert "Forecast: — · Previous: —" in msgs[0].text
 
 
@@ -251,3 +258,18 @@ def test_big_movers_are_bold_but_speeches_are_not(cfg, make_ctx):
         assert is_big_mover(ctx, title), title
     for title in ("FOMC Member Waller Speaks", "Flash Manufacturing PMI", "Retail Sales m/m"):
         assert not is_big_mover(ctx, title), title
+
+
+def test_backup_calendar_address_is_used_when_the_main_one_fails(cfg):
+    main = cfg.sources["calendar"]["url"]
+    asked = []
+
+    def fetch(url):
+        asked.append(url)
+        if url == main:
+            raise OSError("main host down")
+        return json.dumps(SAMPLE).encode()
+
+    svc = CalendarService(cfg, MONDAY, persist=False, fetch=fetch)
+    assert len(svc.events()) == 5 and svc.status == "live"
+    assert asked[0] == main and len(asked) == 2

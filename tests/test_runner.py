@@ -39,9 +39,10 @@ def test_failed_send_is_not_marked_and_retries_next_run(make_ctx):
     assert again.kinds == ["london"]
 
 
-def test_two_messages_in_one_run_are_spaced_by_the_gap(make_ctx):
+def test_two_messages_in_one_run_are_spaced_by_the_gap(make_ctx, cfg):
     sleeps = []
     sender = FakeSender()
+    cfg.schedule["messages"]["overlap"]["enabled"] = True  # the shipped schedule has it switched off
     ctx = make_ctx(uk(2026, 11, 23, 13, 5))  # delayed run: New York AND overlap are both due
     run_scheduled(ctx, sender, sleep=sleeps.append)
     assert sender.kinds == ["newyork", "overlap"]
@@ -100,8 +101,8 @@ def test_news_alert_is_sent_once_across_runs(make_ctx):
 
 def test_rotation_is_remembered_between_runs(make_ctx, cfg):
     first, second = FakeSender(), FakeSender()
-    run(make_ctx, uk(2026, 11, 24, 18, 0), first)  # Tue vip_pm
-    run(make_ctx, uk(2026, 11, 25, 18, 0), second)  # Wed vip_pm
+    run(make_ctx, uk(2026, 11, 23, 11, 0), first)  # Mon vip_am
+    run(make_ctx, uk(2026, 11, 25, 11, 0), second)  # Wed vip_am
     state = State.load(cfg.root / "state" / "sent.json")
     assert state.last_rotation("funnel_vip")
     assert first.messages[0].text != second.messages[0].text
@@ -110,7 +111,33 @@ def test_rotation_is_remembered_between_runs(make_ctx, cfg):
 def test_preview_prints_every_message_type(make_ctx, capsys):
     result = run_preview(make_ctx(uk(2026, 11, 23, 8, 0), dry_run=True), ConsoleSender())
     out = capsys.readouterr().out
-    for fragment in ("LONDON SESSION OPEN", "ASIAN SESSION OPEN", "NEW YORK SESSION OPEN", "OVERLAP", "APPLY NOW", "JOIN NOW", "SAMPLE"):
+    for fragment in ("LONDON SESSION OPEN", "ASIAN SESSION OPEN", "NEW YORK SESSION OPEN", "OVERLAP", "Apply for mentorship", "VIP", "SAMPLE"):
         assert fragment in out
     assert "calendar" in result.skipped and "news" in result.skipped  # no network in tests: skipped, not crashed
     assert result.ok
+
+
+def test_live_preview_sends_one_of_each_and_prints_a_summary(make_ctx, capsys):
+    from rdfx_bot.runner import run_preview
+
+    sender = FakeSender()
+    ctx = make_ctx(uk(2026, 11, 23, 8, 0), dry_run=False)
+    result = run_preview(ctx, sender, sleep=lambda s: None)
+    assert {"asia", "london", "newyork", "overlap", "social"} <= set(sender.kinds)
+    assert len(sender.kinds) == len(set(sender.kinds))  # one of each
+    out = capsys.readouterr().out
+    assert "SUMMARY" in out and "MISSING  news" in out  # no network in tests: said so, not silent
+    assert "news" in result.skipped
+
+
+def test_alert_wording_for_a_far_away_event():
+    from datetime import timedelta
+
+    from rdfx_bot.kinds.alerts import minutes_text
+
+    class C:
+        now = uk(2026, 11, 23, 3, 0)
+
+    assert minutes_text(C, C.now + timedelta(minutes=315)) == "5 hours 15 minutes"
+    assert minutes_text(C, C.now + timedelta(minutes=120)) == "2 hours"
+    assert minutes_text(C, C.now + timedelta(minutes=15)) == "15 minutes"

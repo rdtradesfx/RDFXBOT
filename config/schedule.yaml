@@ -11,6 +11,9 @@
 #   days:            optional, narrows the days (mon tue wed thu fri sat sun).
 #                    Leave out to use every day allowed in settings.yaml.
 #   times:           one or more "HH:MM" UK times
+#   tz:              optional. The times above are read in THIS timezone instead of UK time,
+#                    e.g. tz: "Asia/Tokyo". The bot converts to UK time itself, so the message
+#                    moves with the clocks changing. Leave it out for normal UK times.
 #   offset_minutes:  optional, shifts the time later (0 is allowed)
 #   catch_up_minutes: optional, overrides the global catch-up window for this entry
 
@@ -18,11 +21,19 @@
 # this many minutes of its scheduled time. After that it is skipped (never sent stale).
 catch_up_minutes: 45
 
+# If the news or calendar data is STILL missing in the last this-many minutes of a message's
+# catch-up window, a short plan-B message goes out (see messages/extras.yaml) instead of silence.
+# Set to 0 to switch that off (the message is then simply skipped).
+fallback_minutes: 15
+
 messages:
+  # Asian session = Tokyo's open, 09:00 Tokyo time. That is 00:00 UK in winter (GMT)
+  # and 01:00 UK in summer (BST), because Japan does not change its clocks.
   asia_open:
     kind: asia
     enabled: true
-    times: ["01:00"]
+    tz: "Asia/Tokyo"
+    times: ["09:00"]
 
   daily_news:
     kind: news
@@ -39,47 +50,44 @@ messages:
     enabled: true
     times: ["08:30"]
 
+  # New York open = 08:00 New York time. That is 13:00 UK almost all year; for about
+  # 3 weeks a year (when the US and UK change clocks on different dates) it is 12:00 UK.
+  # To always send at 13:00 UK instead, delete the tz line and keep times: ["13:00"].
   newyork_open:
     kind: newyork
     enabled: true
-    times: ["13:00"]
+    tz: "America/New_York"
+    times: ["08:00"]
 
-  # London x New York overlap. Base time 13:00 plus a 3 minute stagger so it
-  # does not land on top of the New York message. Set offset_minutes: 0 to send together.
+  # London x New York overlap: SWITCHED OFF. Set enabled: true to bring it back
+  # (base 13:00 plus a 3 minute stagger so it does not land on top of the New York message).
   overlap:
     kind: overlap
-    enabled: true
+    enabled: false
     times: ["13:00"]
     offset_minutes: 3
 
-  # --- Funnel messages (rotate through the pools in messages/funnels.yaml) ---
-  mentorship_am:
-    kind: funnel_mentorship
+  # --- Selling posts: kept to under 20% of all posts (6 a week against 25 scheduled useful posts plus the news alerts) ---
+  # One funnel post a day on weekdays, alternating VIP and mentorship. Funnel text rotates through
+  # the pools in messages/funnels.yaml.
+  vip_am:
+    kind: funnel_vip
     enabled: true
     days: [mon, wed, fri]
     times: ["11:00"]
 
-  vip_am:
-    kind: funnel_vip
+  mentorship_am:
+    kind: funnel_mentorship
     enabled: true
     days: [tue, thu]
     times: ["11:00"]
 
-  vip_pm:
-    kind: funnel_vip
+  # --- Social follow reminder (rotates through messages/socials.yaml): once a week ---
+  social_pm:
+    kind: social
     enabled: true
+    days: [wed]
     times: ["18:00"]
-
-  # --- Social reminders (rotate through messages/socials.yaml) ---
-  social_midday:
-    kind: social
-    enabled: true
-    times: ["12:00"]
-
-  social_evening:
-    kind: social
-    enabled: true
-    times: ["20:00"]
 
 # News alerts: sent shortly before each High/Medium event from the calendar.
 alerts:

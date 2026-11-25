@@ -189,9 +189,7 @@ class CalendarService:
         recently_failed = bool(last_attempt and cache.get("last_ok") is False and now_utc - last_attempt < retry)
         if not recently_failed:
             try:
-                data = json.loads(self._fetch(str(cfg.get("url") or "")).decode("utf-8"))
-                if not isinstance(data, list):
-                    raise ValueError("feed is not a list")
+                data = self._fetch_json([cfg.get("url"), *(cfg.get("backup_urls") or [])])
                 events = parse_events(data, cfg, self.cfg.tz)
                 self._write_cache(
                     {
@@ -211,6 +209,22 @@ class CalendarService:
         if fetched_at and now_utc - fetched_at <= max_stale:
             return self._events_from_cache(cache), "stale"
         return None, "down"
+
+    def _fetch_json(self, urls: list) -> list:
+        """Try the main URL, then each backup, and return the first usable list."""
+        last_error: Exception = ValueError("no calendar URL configured")
+        for url in urls:
+            if not url:
+                continue
+            try:
+                data = json.loads(self._fetch(str(url)).decode("utf-8"))
+                if not isinstance(data, list):
+                    raise ValueError("feed is not a list")
+                return data
+            except Exception as exc:  # noqa: BLE001 - try the next address
+                last_error = exc
+                log.warning("Calendar address %s failed (%s)", str(url).split("/")[2] if "//" in str(url) else "?", type(exc).__name__)
+        raise last_error
 
     def _load_overrides(self) -> list[Event]:
         path = self.cfg.root / (self._cfg().get("overrides_file") or "events.json")

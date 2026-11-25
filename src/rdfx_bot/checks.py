@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
+
 from .config import Config
 from .kinds import KINDS
 from .scheduler import DAYS, parse_hhmm
@@ -33,6 +35,11 @@ def check_config(cfg: Config) -> list[str]:
             else:
                 if isinstance(value, int):
                     problems.append(f"{where}: put times in quotes, e.g. \"13:00\"")
+        if entry.get("tz"):
+            try:
+                ZoneInfo(str(entry["tz"]))
+            except (ZoneInfoNotFoundError, ValueError):
+                problems.append(f"{where}: unknown timezone '{entry['tz']}' (use e.g. Europe/London, Asia/Tokyo, America/New_York)")
         for day in entry.get("days") or []:
             if str(day).lower() not in DAYS:
                 problems.append(f"{where}: unknown day '{day}'")
@@ -56,12 +63,12 @@ def check_config(cfg: Config) -> list[str]:
     problems += _check_pool("socials.yaml", cfg.messages.get("socials") or {}, cfg)
 
     # templates
-    templates = cfg.messages.get("templates") or {}
-    for group, items in templates.items():
-        if isinstance(items, dict):
-            for key, value in items.items():
-                if isinstance(value, str):
-                    problems += _html_problems(f"templates.yaml {group}.{key}", value)
+    for file_name in ("templates", "extras"):
+        for group, items in (cfg.messages.get(file_name) or {}).items():
+            if isinstance(items, dict):
+                for key, value in items.items():
+                    if isinstance(value, str):
+                        problems += _html_problems(f"{file_name}.yaml {group}.{key}", value)
     return problems
 
 

@@ -13,19 +13,18 @@
 
 | Time | Message |
 |---|---|
-| 00:00 | Asian session open |
+| 00:00 (winter) / 01:00 (summer) | Asian session open (Tokyo 09:00, so it follows the clocks) |
 | 07:00 | Daily market news (USD / GOLD / GBP headlines) |
 | 08:00 | London session open |
 | 08:30 | Economic calendar for today |
 | 11:00 | Mon/Wed/Fri: 1-1 mentorship funnel. Tue/Thu: VIP funnel |
 | 12:00 | Social follow reminder |
-| 13:00 | New York session open |
-| 13:03 | London x New York overlap (3 minute stagger, set `offset_minutes: 0` to send together) |
+| 13:00 | New York session open (08:00 New York time; 12:00 UK for ~3 weeks a year when US and UK clocks differ) |
 | 15 min before each High/Medium event | News alert |
 | 18:00 | VIP funnel |
 | 20:00 | Social follow reminder |
 
-Weekends: nothing is sent. All of this is in `config/schedule.yaml`.
+Weekends: nothing is sent. The London x New York overlap post is **switched off** (set `enabled: true` on `overlap` in `config/schedule.yaml` to bring it back). All of this is in `config/schedule.yaml`.
 
 ---
 
@@ -115,7 +114,9 @@ Open a file on GitHub, tap the pencil, edit, **Commit changes**. The next run us
 | Add a news event the feed missed | `events.json` (see below) |
 | Change which currencies are included | `config/sources.yaml` > `calendar` > `currencies` |
 | Change the news sources or keywords | `config/sources.yaml` > `news` |
-| Stack the overlap on top of New York | `config/schedule.yaml` > `overlap` > `offset_minutes: 0` |
+| Bring the overlap post back | `config/schedule.yaml` > `overlap` > `enabled: true` |
+| Reword the plan-B messages and the "Watch today" lines | `messages/extras.yaml` |
+| Make a session follow another city's clock | `config/schedule.yaml` > add `tz: "Asia/Tokyo"` to the entry and give the time in that city's local time |
 
 **Formatting in messages:** `**bold**` works. Write `&amp;` for `&`. Don't type a stray `<` or `>`.
 
@@ -138,8 +139,8 @@ Open a file on GitHub, tap the pencil, edit, **Commit changes**. The next run us
 - **Timing can drift.** GitHub's `*/5` schedule is best-effort. Runs can start a few minutes late, and occasionally much later when GitHub is busy. The bot tolerates this: a message is still sent if it is within its **catch-up window** (default 45 minutes, `catch_up_minutes` in `schedule.yaml`). After that it is skipped, so a session message never lands hours late.
 - **News alerts are "15 minutes or less".** An alert goes out on the first run when an event is 15 minutes or fewer away. If a run is late, the alert says the real time left (e.g. "Releasing in 9 minutes"). It never alerts for something already released, and sends once per event.
 - **Nothing is sent twice.** `state/sent.json` records every send and is committed back to the repo after each run. Runs never overlap (a concurrency lock).
-- **The calendar feed is unofficial.** It is the free ForexFactory weekly JSON (`nfs.faireconomy.media`). It was **not reachable from the environment I built this in**, so it has been tested against the known field layout and a lot of fake data, but not live. Your first `preview` run will tell you immediately: a working feed prints a calendar; a failing one logs "feed unavailable". If it ever disappears, the bot keeps using the last good copy for 48 hours, then skips calendar messages rather than sending wrong ones. The feed is fetched at most once an hour.
-- **News sources.** The BoE, FXStreet and Federal Reserve speeches feeds were confirmed working; the Fed press-release and BBC Business URLs are confirmed official but were not fetched directly. If one is down the others still work. If all are down, the 07:00 news waits and retries inside the catch-up window rather than sending a broken message. Only headline + link + source name are used, never article text.
+- **The calendar feed is unofficial.** It is the free ForexFactory weekly JSON (`nfs.faireconomy.media`). It was **not reachable from the environment I built this in**, so it has been tested against the known field layout and a lot of fake data, but not live. Your first `preview` run will tell you immediately: a working feed prints a calendar; a failing one logs "feed unavailable". If the main address fails it tries a backup address, then reuses the last good copy for up to 48 hours. If nothing works, the 08:30 calendar keeps retrying and, in the last 15 minutes of its window, sends a plan-B message with one button to a live calendar (set `CALENDAR_URL` in `links.yaml` to change where it points). It never claims "nothing today" when it simply could not load the data. The feed is fetched at most once an hour.
+- **News sources.** The BoE, FXStreet and Federal Reserve speeches feeds were confirmed working; the Fed press-release and BBC Business URLs are confirmed official but were not fetched directly. If one is down the others still work. If all are down, the 07:00 news keeps retrying and, in the last 15 minutes of its window, sends a short plan-B message saying the feeds are unavailable (wording in `messages/extras.yaml`; `fallback_minutes: 0` in `schedule.yaml` switches plan B off). Only the headline text and the source name are posted (no links, never article text). To make headlines clickable again, change `headline_item` in `messages/templates.yaml`. Under each section the bot adds a "📌 Watch today" line listing that currency's High/Medium events for the day (gold uses the US dollar events); change `watch_max_events` in `config/sources.yaml` (0 turns it off).
 - **A lot of small commits.** During the week the bot commits `state/` when something changes (at most roughly once an hour for the calendar cache, plus one per send). This is normal. Those commits are marked `[skip ci]`.
 - **GitHub switches scheduled workflows off after 60 days with no repo activity.** Two protections: the bot's own state commits count as activity, and `.github/workflows/keepalive.yml` re-enables the bot's schedule once a week through the GitHub API. If GitHub ever emails you that the schedule was disabled, go to **Actions > RDFX bot > Enable workflow** and it's fixed.
 - **No financial advice.** The messages are education and reminders. Wording is yours; keep it that way.
@@ -240,11 +241,11 @@ GitHub emails you when a run fails, so problems don't go unnoticed.
 
 **Assumptions I made:**
 - Weekend means **no sends at all**, including the 00:00 Asian open (Mon-Fri UK dates only). Change `active_days` in `settings.yaml` to alter this.
-- The 00:00 Asian open follows your request literally. Tokyo's cash open is 00:00 UK in winter but 01:00 in summer (BST); move it in `schedule.yaml` if you'd rather match.
+- The Asian open is Tokyo's 09:00 open, so it is 00:00 UK in winter and 01:00 UK in summer. London is 08:00 UK all year. New York is 08:00 New York time (13:00 UK, or 12:00 UK in the weeks when the US and UK clocks differ). Remove the `tz:` lines in `schedule.yaml` for fixed UK times.
 - Funnels: mentorship Mon/Wed/Fri 11:00; VIP Tue/Thu 11:00 and every weekday 18:00. Socials 12:00 and 20:00 weekdays. Message choice is random but never the same one twice in a row per pool.
 - Several events at the same minute become **one** alert message (`group_same_time: false` splits them).
 - The catch-up window is 45 minutes for everything, including the 08:30 calendar and 07:00 news (which retry inside that window if a feed is down).
-- High/Medium only, USD/GBP/EUR/JPY. Holidays and Low impact are ignored.
+- High (red) and Medium (orange) only, USD/GBP/EUR/AUD. Holidays and Low impact are ignored.
 - Bold in the calendar goes on big movers (CPI, inflation, NFP, employment change, FOMC statement / press conference, interest and bank rates, GDP, unemployment). Speeches are not bold. The list is in `config/sources.yaml`.
 - Telegram link previews are switched off so the posts stay clean.
 - The 5th social message (YouTube) is my draft. Please approve it.
@@ -261,7 +262,7 @@ config/settings.yaml             kill switch, blocked dates, timezone
 config/schedule.yaml             times, days, on/off per message, catch-up window
 config/links.yaml                every link (VIP, mentorship, Instagram, YouTube, TikTok)
 config/sources.yaml              calendar feed, RSS whitelist, keyword rules
-messages/*.yaml                  ALL message wording
+messages/*.yaml                  ALL message wording (extras.yaml = plan-B messages + watch lines)
 events.json                      optional manual events
 state/                           sent history + calendar cache (written by the bot)
 src/rdfx_bot/                    the program (kinds/ = one file per message type)
@@ -271,8 +272,21 @@ tests/                           automated tests
 **Run the tests / try it locally** (optional; needs Python 3.11+):
 ```bash
 pip install -r requirements-dev.txt
-python -m pytest                              # 124 tests
+python -m pytest                              # 145 tests
 PYTHONPATH=src python -m rdfx_bot check       # validate config + messages
 PYTHONPATH=src python -m rdfx_bot preview     # print every message type
 PYTHONPATH=src python -m rdfx_bot run --dry-run --now 2026-11-23T08:00   # pretend it is Mon 08:00 UK
 ```
+
+
+## Tracked links and failure notices
+
+**Tracked links:** every funnel and social button carries the id of the message that posted it
+(`config/settings.yaml`, `tracking:`).
+- Mentorship (Tally): add a hidden field named `source` to the form. Tally then shows the message id with each application.
+- VIP (the t.me chat link): the chat opens with a pre-typed message ending with a short code like `Ref: V-7K2`. Edit it with `chat_text`.
+- Instagram / TikTok / YouTube: the tag is added (utm_*), but those apps do not report it to you.
+
+**Failure notices:** if a scheduled post fails, or plan B had to be used, the bot messages you privately
+(once per problem per day). Open a chat with the bot, press Start, send `/myid`, and put the number it
+replies with in `config/settings.yaml` as `admin_chat_id`. Switch off with `failure_notices: false`.

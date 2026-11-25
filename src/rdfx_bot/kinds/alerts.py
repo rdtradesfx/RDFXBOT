@@ -27,7 +27,13 @@ def minutes_text(ctx: Context, start) -> str:
     """'15 minutes' when on time; the real time left if GitHub ran late."""
     remaining = math.ceil((start - ctx.now).total_seconds() / 60)
     remaining = max(1, remaining)
-    return "1 minute" if remaining == 1 else f"{remaining} minutes"
+    if remaining == 1:
+        return "1 minute"
+    if remaining < 60:
+        return f"{remaining} minutes"
+    hours, mins = divmod(remaining, 60)
+    text = f"{hours} hour" + ("s" if hours != 1 else "")
+    return f"{text} {mins} minutes" if mins else text
 
 
 def _message_for(ctx: Context, group: list[Event]) -> Message:

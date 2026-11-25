@@ -30,3 +30,22 @@ retention_days: 14
 
 # Where the bot remembers what it has sent (committed back by the workflow).
 state_file: state/sent.json
+
+# ---------------------------------------------------------------------------
+# Failure notices: the bot messages YOU privately if a scheduled post fails
+# or a plan-B message had to be used.
+# 1) Open a chat with your bot, press Start and send /myid (reply can take ~5 minutes)
+# 2) Put the number it sends back here:
+admin_chat_id: ""
+failure_notices: true
+
+# ---------------------------------------------------------------------------
+# Tracked links: every funnel and social button link carries the id of the message that posted it.
+#   Tally form:  add a hidden field called "source" and it records the message id with each application.
+#   VIP (t.me chat link): the chat opens with the text below pre-typed, ending with the tag.
+#   Websites with analytics: utm_source / utm_medium / utm_campaign are added.
+tracking:
+  enabled: true
+  utm_source: telegram
+  tally_field: source
+  chat_text: "Hi Ryan, I'd like to join RDFX VIP. Ref: {ref}"

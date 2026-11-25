@@ -47,14 +47,13 @@ def test_news_sorted_into_sections_with_source_names_and_links(make_ctx):
     )
     message = build(make_ctx, "news", news_fetcher=fetcher({"fxstreet": xml}))
     text = message.text
-    assert text.startswith("🚨RDFX | DAILY MARKET NEWS 🚨🗞️")
-    assert "• 🇺🇸 USD: " in text and "• 🥇 GOLD: " in text and "• 🇬🇧 GBP: " in text
-    assert '<a href="https://www.fxstreet.com/news/gold-1">' in text
+    assert text.startswith("<b>🚨 RDFX | DAILY MARKET NEWS")
+    assert "• 🇺🇸 USD:" in text and "• 🥇 GOLD:" in text and "• 🇬🇧 GBP:" in text
+    assert "Gold Price Forecast: XAU/USD climbs as safe haven demand rises (FXStreet)" in text
+    assert "<a " not in text and "https://" not in text  # headlines only, no links
     assert "(FXStreet)" in text
-    assert "Gold third story" not in text  # max 2 per section
-    assert text.count("Gold hits a record high") == 1
+    assert "Gold hits a record high" in text and "Gold third story" not in text  # gold shows up to two headlines, others one
     assert validate_html(text) == []
-    assert text.rstrip().endswith("Keep an eye on today's major economic releases and potential volatility.")
 
 
 def test_news_never_copies_article_text(make_ctx):
@@ -65,17 +64,16 @@ def test_news_never_copies_article_text(make_ctx):
     assert "FULL ARTICLE BODY" not in message.text
 
 
-def test_empty_sections_keep_the_friendly_default_lines(make_ctx):
+def test_empty_sections_are_left_out(make_ctx):
     xml = rss_xml([("Sterling rallies after UK inflation surprise", "https://www.fxstreet.com/news/gbp-1", RECENT)])
     text = build(make_ctx, "news", news_fetcher=fetcher({"fxstreet": xml})).text
-    assert "Latest developments affecting the dollar: nothing major so far, stay patient." in text
-    assert "Latest developments affecting gold: nothing major so far, stay patient." in text
-    assert "affecting sterling: nothing major" not in text  # that section has a real headline
+    assert "Sterling rallies after UK inflation surprise" in text
+    assert text.count("nothing major so far, stay patient") == 4
 
 
-def test_feeds_work_but_no_news_at_all_still_sends_a_complete_message(make_ctx):
+def test_feeds_work_but_no_news_at_all_still_sends_one_short_message(make_ctx):
     text = build(make_ctx, "news", news_fetcher=fetcher({"fxstreet": rss_xml([])})).text
-    assert text.count("nothing major so far, stay patient.") == 3
+    assert text.count("nothing major so far, stay patient") == 5
     assert validate_html(text) == []
 
 
@@ -84,7 +82,8 @@ def test_all_feeds_down_means_retry_not_a_broken_message(make_ctx):
         build(make_ctx, "news")  # conftest network is always down
 
 
-def test_headlines_older_than_24_hours_are_ignored(make_ctx):
+def test_headlines_older_than_24_hours_are_ignored(make_ctx, cfg):
+    cfg.sources["news"]["monday_max_age_hours"] = 24  # NOW is a Monday, which normally looks back 72h
     xml = rss_xml(
         [
             ("Gold is old news", "https://www.fxstreet.com/news/gold-old", NOW - timedelta(hours=30)),
@@ -104,8 +103,7 @@ def test_routine_admin_noise_is_excluded(make_ctx):
 def test_bank_of_england_items_default_to_the_gbp_section(make_ctx):
     xml = rss_xml([("Governor speaks at conference", "https://www.bankofengland.co.uk/news/2026/x", RECENT)])
     text = build(make_ctx, "news", news_fetcher=fetcher({"bankofengland": xml})).text
-    gbp_line = next(line for line in text.splitlines() if line.startswith("• 🇬🇧"))
-    assert "Governor speaks at conference" in gbp_line
+    assert "• 🇬🇧 GBP: <b>Governor speaks at conference" in text
 
 
 def test_headline_text_cannot_inject_markup_or_links(make_ctx):
@@ -149,25 +147,22 @@ def test_headline_picks_the_best_matching_section_only_once(make_ctx):
 # --------------------------------------------------------------------------- session wording
 def test_session_messages_use_the_exact_wording_and_html(make_ctx):
     london = build(make_ctx, "london").text
-    assert london.startswith("<b>RDFX: LONDON SESSION OPEN</b>")
-    assert "The London session is now LIVE. 🇬🇧" in london
-    assert "Stay patient, wait for confirmation and don't force trades." in london
-    assert london.rstrip().endswith("<b>Precision Meets Profit.</b> 🥇")
+    assert london.startswith("<b>🇬🇧 LONDON SESSION OPEN</b>")
+    assert "Be patient, wait for your confirmation and don't force trades." in london
+    assert london.rstrip().endswith("<b>RDFX | Precision Meets Profit</b>")
 
     ny = build(make_ctx, "newyork").text
-    assert ny.startswith("RDFX: NEW YORK SESSION OPEN🇺🇸🗽")
-    assert "US liquidity is entering the market. Expect potential volatility across USD pairs and Gold." in ny
-    assert ny.rstrip().endswith("<b>RDFX | Precision Meets Profit</b>")
+    assert ny.startswith("<b>🇺🇸 NEW YORK SESSION OPEN</b>")
+    assert "Expect volatility across USD pairs and gold." in ny
 
     overlap = build(make_ctx, "overlap").text
-    assert overlap.startswith("🔥 <b>RDFX: LONDON x NEW YORK OVERLAP</b>")
-    assert "London 🇬🇧 + New York 🇺🇸 are both LIVE." in overlap
+    assert overlap.startswith("<b>🔥 LONDON x NEW YORK OVERLAP</b>")
 
     asia = build(make_ctx, "asia").text
-    assert asia.startswith("RDFX: ASIAN SESSION OPEN🌎")
-    assert "Stay disciplined. 🫡" in asia
-    assert asia.rstrip().endswith("RDFX | Precision Meets Profit! 🥇")
+    assert asia.startswith("<b>🌏 ASIAN SESSION OPEN</b>")
+    assert "Not every session offers a trade. Stay disciplined." in asia
     for text in (london, ny, overlap, asia):
+        assert text.rstrip().endswith("<b>RDFX | Precision Meets Profit</b>")
         assert validate_html(text) == []
 
 
@@ -181,10 +176,12 @@ def test_the_precicion_typo_is_nowhere_in_the_messages(cfg):
 # --------------------------------------------------------------------------- funnels
 def test_funnel_buttons_use_the_links_file(make_ctx, cfg):
     vip = build(make_ctx, "funnel_vip")
-    assert [(b.label, b.url) for b in vip.buttons] == [("JOIN NOW", "https://t.me/RDFX6")]
+    assert [b.label for b in vip.buttons] == ["Join RDFX VIP"] and vip.buttons[0].url.startswith("https://t.me/RDFX6?text=")
     mentor = build(make_ctx, "funnel_mentorship")
-    assert [(b.label, b.url) for b in mentor.buttons] == [("APPLY NOW", "https://tally.so/r/wdBLED")]
+    assert [b.label for b in mentor.buttons] == ["Apply for mentorship"] and mentor.buttons[0].url.startswith("https://tally.so/r/wdBLED?")
     cfg.links["VIP_URL"] = "https://t.me/changed"
+    assert build(make_ctx, "funnel_vip").buttons[0].url.startswith("https://t.me/changed?text=")
+    cfg.settings["tracking"] = {"enabled": False}  # tracking off = the plain link
     assert build(make_ctx, "funnel_vip").buttons[0].url == "https://t.me/changed"
 
 
@@ -194,7 +191,7 @@ def test_funnel_text_has_no_pasted_link(make_ctx):
             assert "http" not in build(make_ctx, kind, seed=_).text
 
 
-@pytest.mark.parametrize("kind,pool_size", [("funnel_vip", 6), ("funnel_mentorship", 2)])
+@pytest.mark.parametrize("kind,pool_size", [("funnel_vip", 5), ("funnel_mentorship", 4)])
 def test_funnel_rotation_never_repeats_immediately_and_uses_every_message(make_ctx, kind, pool_size):
     ctx = make_ctx(NOW, seed=7)
     seen, previous = [], None
@@ -226,7 +223,7 @@ def test_rotation_is_not_a_fixed_cycle():
 
 # --------------------------------------------------------------------------- socials
 def test_tiktok_message_and_button_are_left_out_while_the_link_is_empty(make_ctx, cfg):
-    assert cfg.links["TIKTOK_URL"] == ""
+    cfg.links["TIKTOK_URL"] = ""
     ctx = make_ctx(NOW, seed=11)
     seen_ids = set()
     for _ in range(200):
@@ -234,18 +231,19 @@ def test_tiktok_message_and_button_are_left_out_while_the_link_is_empty(make_ctx
         ctx.state.set_rotation(*message.rotation)
         seen_ids.add(message.rotation[1])
         assert "tiktok" not in message.text.lower()
-        assert all("tiktok.com" not in b.url and b.label != "TIKTOK" for b in message.buttons)
+        assert all("tiktok.com" not in b.url and b.label != "TikTok" for b in message.buttons)
     assert "tiktok-more-content" not in seen_ids
     assert seen_ids == {"instagram-keep-up", "instagram-new-content", "all-platforms", "youtube-watch-and-learn"}
 
 
 def test_all_platforms_message_gets_instagram_and_youtube_buttons_only_without_tiktok(make_ctx, cfg):
+    cfg.links["TIKTOK_URL"] = ""
     ctx = make_ctx(NOW)
     pool = cfg.messages["socials"]
     from rdfx_bot.kinds._pool import eligible_messages
 
     buttons = {e["id"]: [b.label for b in bs] for e, bs in eligible_messages(pool, ctx)}
-    assert buttons["all-platforms"] == ["INSTAGRAM", "YOUTUBE"]
+    assert buttons["all-platforms"] == ["Instagram", "YouTube"]
 
 
 def test_tiktok_link_switches_on_the_tiktok_message_and_button(make_ctx, cfg):
@@ -253,13 +251,14 @@ def test_tiktok_link_switches_on_the_tiktok_message_and_button(make_ctx, cfg):
     from rdfx_bot.kinds._pool import eligible_messages
 
     buttons = {e["id"]: [b.label for b in bs] for e, bs in eligible_messages(cfg.messages["socials"], make_ctx(NOW))}
-    assert buttons["tiktok-more-content"] == ["FOLLOW ON TIKTOK"]
-    assert buttons["all-platforms"] == ["INSTAGRAM", "YOUTUBE", "TIKTOK"]
+    assert buttons["tiktok-more-content"] == ["Follow on TikTok"]
+    assert buttons["all-platforms"] == ["Instagram", "YouTube", "TikTok"]
 
 
 def test_invalid_link_is_treated_as_empty_not_an_error(make_ctx, cfg):
     cfg.links["INSTAGRAM_URL"] = "javascript:alert(1)"
     cfg.links["YOUTUBE_URL"] = ""
+    cfg.links["TIKTOK_URL"] = ""
     assert KINDS["social"](make_ctx(NOW)) is None  # nothing sendable: skipped quietly
 
 
@@ -293,3 +292,46 @@ def test_validate_html_catches_what_telegram_would_reject():
     assert validate_html("a < b")
     assert validate_html("fish & chips")
     assert validate_html("<script>x</script>")
+
+
+def test_monday_looks_back_over_the_weekend(make_ctx):
+    xml = rss_xml([("Gold slips on Friday", "https://www.fxstreet.com/news/gold-fri", NOW - timedelta(hours=40))])
+    text = build(make_ctx, "news", news_fetcher=fetcher({"fxstreet": xml})).text
+    assert "Gold slips on Friday" in text
+
+
+def test_empty_section_gets_a_looser_match_instead_of_nothing(make_ctx):
+    xml = rss_xml([("Oil and Treasury yields jump as tariffs bite", "https://www.fxstreet.com/news/x", RECENT)])
+    text = build(make_ctx, "news", news_fetcher=fetcher({"fxstreet": xml})).text
+    assert "Oil and Treasury yields jump" in text
+
+
+REAL_FXSTREET = [
+    "Japanese Yen: Consolidates near 158 against US Dollar - UOB",
+    "Gold Price Forecast: XAU/USD drifts lower with US CPI, Fed speakers in focus",
+    "Singapore Dollar: MAS pause keeps policy band unchanged – DBS",
+    "Silver price today: Silver falls, according to FXStreet data",
+    "WTI falls to near $93.00 as OPEC+ output surges, Russian diesel agreement looms",
+    "Euro: Positioning turns net short – BNY",
+    "Yemen's Houthis confirm targeting various Aramco refineries",
+    "USD/CHF Price Forecast: Targets 0.8350 hurdle as USD bulls await US CPI report",
+    "British Pound gives back some early gains ahead of US CPI release",
+    "Dow Jones futures advance as US Treasury yields, oil prices ease",
+    "AUD/USD edges higher as RBA Bullock signals patience",
+]
+
+
+def test_real_fxstreet_headlines_land_under_the_right_markets(make_ctx):
+    """Headlines copied from the live FXStreet feed: each one must sit under the market it is about."""
+    xml = rss_xml([(title, f"https://www.fxstreet.com/news/{i}", RECENT - timedelta(minutes=i)) for i, title in enumerate(REAL_FXSTREET)])
+    text = build(make_ctx, "news", news_fetcher=fetcher({"fxstreet": xml})).text
+    blocks = {b.split(":", 1)[0].replace("• ", "")[:2]: b for b in text.split("\n") if b.startswith("• ")}
+    blocks = {k: "\n".join(l for l in text.split("\n") if l.startswith(f"• {k}")) for k in ("🥇", "🇺🇸", "🇪🇺", "🇬🇧", "🇦🇺")}
+    gold, usd = blocks["🥇"], blocks["🇺🇸"]
+    assert "Houthis" in gold and "Houthis" in usd  # a war-type event is shown under gold AND the dollar
+    assert "Gold Price Forecast" in gold
+    assert "Euro: Positioning" in blocks["🇪🇺"]
+    assert "British Pound" in blocks["🇬🇧"]
+    assert "AUD/USD edges higher" in blocks["🇦🇺"]
+    for wrong in ("Singapore Dollar", "Silver price today", "WTI falls", "Japanese Yen", "USD/CHF"):
+        assert wrong not in text, wrong  # off-topic markets never appear

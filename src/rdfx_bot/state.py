@@ -19,6 +19,7 @@ class State:
         self.sent: dict[str, str] = dict(data.get("sent") or {})
         self.alerts: dict[str, str] = dict(data.get("alerts") or {})
         self.rotation: dict[str, str] = dict(data.get("rotation") or {})
+        self.notices: dict[str, str] = dict(data.get("notices") or {})  # failure notices already sent to the owner
 
     @classmethod
     def load(cls, path: Path) -> "State":
@@ -60,10 +61,17 @@ class State:
     def set_rotation(self, pool: str, message_id: str) -> None:
         self.rotation[pool] = message_id
 
+    # -- owner notices -----------------------------------------------------------
+    def has_noticed(self, key: str) -> bool:
+        return key in self.notices
+
+    def mark_noticed(self, key: str, now: datetime) -> None:
+        self.notices[key] = now.isoformat(timespec="seconds")
+
     # -- housekeeping --------------------------------------------------------
     def prune(self, now: datetime, days: int = 14) -> None:
         cutoff = now - timedelta(days=days)
-        for table in (self.sent, self.alerts):
+        for table in (self.sent, self.alerts, self.notices):
             for key, stamp in list(table.items()):
                 try:
                     if datetime.fromisoformat(stamp) < cutoff:
@@ -72,7 +80,7 @@ class State:
                     del table[key]
 
     def to_dict(self) -> dict:
-        return {"alerts": self.alerts, "rotation": self.rotation, "sent": self.sent}
+        return {"alerts": self.alerts, "notices": self.notices, "rotation": self.rotation, "sent": self.sent}
 
     def save(self) -> None:
         """Write atomically so a crash can never leave a half-written file."""

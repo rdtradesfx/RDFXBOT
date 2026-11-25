@@ -11,6 +11,7 @@ from datetime import datetime
 from .checks import check_config
 from .config import ConfigError, load_config
 from .context import Context
+from .inbox import admin_id, notify_owner, notify_run_problems, process_inbox
 from .kinds import KINDS
 from .runner import ConsoleSender, run_manual, run_preview, run_scheduled
 from .safety import uk_now
@@ -82,7 +83,10 @@ def main(argv: list[str] | None = None) -> int:
         print("All config and message files look good.")
         return 0
 
-    dry_run = args.command == "preview" or getattr(args, "dry_run", False)
+    # "preview" only prints. But if the GitHub run has "dry run" switched OFF, it sends every message
+    # type to the channel for real (a full live test).
+    live_preview = args.command == "preview" and os.environ.get("INPUT_DRY_RUN", "").strip().lower() == "false"
+    dry_run = (args.command == "preview" and not live_preview) or getattr(args, "dry_run", False)
     now = uk_now()
     if getattr(args, "now", None):
         if not dry_run:
@@ -113,10 +117,27 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.command == "preview":
         result = run_preview(ctx, sender)
+        owner = admin_id(cfg)
+        if live_preview and owner:  # tell the owner privately how the live test went
+            missing = "\n".join(f"- {w}" for w in result.warnings) or "none"
+            sender.send_private(owner, f"Live test finished.\nSent: {', '.join(result.sent) or 'nothing'}\nMissing:\n{missing}")
     elif args.command == "send":
         result = run_manual(ctx, sender, args.kind)
     else:
-        result = run_scheduled(ctx, sender)
+        if not dry_run:
+            try:
+                posted = process_inbox(ctx, sender)  # signals you sent the bot privately
+                if posted:
+                    logging.getLogger(__name__).info("Posted %d signal(s) from the private chat.", posted)
+            except Exception:  # noqa: BLE001 - signals must never stop the scheduled posts
+                logging.getLogger(__name__).exception("Signal check failed")
+        try:
+            result = run_scheduled(ctx, sender)
+        except Exception as exc:
+            notify_owner(ctx, None if dry_run else sender, "crash", f"⚠️ RDFX bot crashed ({type(exc).__name__}). Check the Actions log.")
+            raise
+        if not dry_run:
+            notify_run_problems(ctx, sender, result)
 
     logging.getLogger(__name__).info(
         "Done. sent=%s skipped=%s failed=%s", result.sent or "-", result.skipped or "-", result.failed or "-"

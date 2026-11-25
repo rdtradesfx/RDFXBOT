@@ -8,6 +8,7 @@ from ..context import Context
 from ..models import Button, Message
 from ..rotation import pick
 from ..textutil import render
+from ..tracking import ref_code, track_url
 
 log = logging.getLogger(__name__)
 
@@ -38,6 +39,14 @@ def eligible_messages(pool: dict, ctx: Context) -> list[tuple[dict, list[Button]
     return out
 
 
+def _tagged(buttons: list[Button], tag: str, kind: str, ctx: Context) -> list[Button]:
+    """Every button link carries the id of the message that posted it (see tracking.py)."""
+    medium = "funnel" if kind.startswith("funnel") else kind
+    prefix = {"funnel_vip": "V", "funnel_mentorship": "M", "social": "S"}.get(kind, "X")
+    ref = ref_code(prefix, tag)
+    return [Button(b.label, track_url(b.url, tag, medium, ctx.cfg.settings, ref)) for b in buttons]
+
+
 def pick_from_pool(pool: dict, rotation_key: str, kind: str, ctx: Context) -> Message | None:
     options = eligible_messages(pool, ctx)
     if not options:
@@ -46,4 +55,4 @@ def pick_from_pool(pool: dict, rotation_key: str, kind: str, ctx: Context) -> Me
     by_id = {entry["id"]: (entry, buttons) for entry, buttons in options}
     chosen_id = pick(list(by_id), ctx.state.last_rotation(rotation_key), ctx.rng)
     entry, buttons = by_id[chosen_id]
-    return Message(text=render(str(entry["text"])), buttons=buttons, kind=kind, rotation=(rotation_key, chosen_id))
+    return Message(text=render(str(entry["text"])), buttons=_tagged(buttons, chosen_id, kind, ctx), kind=kind, rotation=(rotation_key, chosen_id))

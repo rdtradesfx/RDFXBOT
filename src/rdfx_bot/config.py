@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 
 DEFAULT_ROOT = Path(__file__).resolve().parents[2]
 MESSAGE_FILES = ("sessions", "funnels", "socials", "templates")
+OPTIONAL_MESSAGE_FILES = ("extras",)  # automatic extras; built-in wording is used if the file is missing
 
 
 class ConfigError(Exception):
@@ -66,11 +67,15 @@ class Config:
 
 def load_config(root: Path | str | None = None) -> Config:
     base = Path(root or os.environ.get("RDFX_ROOT") or DEFAULT_ROOT)
+    messages = {name: load_yaml(base / "messages" / f"{name}.yaml") for name in MESSAGE_FILES}
+    for name in OPTIONAL_MESSAGE_FILES:
+        path = base / "messages" / f"{name}.yaml"
+        messages[name] = load_yaml(path) if path.exists() else {}
     return Config(
         root=base,
         settings=load_yaml(base / "config" / "settings.yaml"),
         schedule=load_yaml(base / "config" / "schedule.yaml"),
         links=load_yaml(base / "config" / "links.yaml"),
         sources=load_yaml(base / "config" / "sources.yaml"),
-        messages={name: load_yaml(base / "messages" / f"{name}.yaml") for name in MESSAGE_FILES},
+        messages=messages,
     )

@@ -5,6 +5,9 @@
 # ---------------------------------------------------------------------------
 calendar:
   url: "https://nfs.faireconomy.media/ff_calendar_thisweek.json"
+  # Tried in order if the main address fails (same data, different host). Not tested live.
+  backup_urls:
+    - "https://cdn-nfs.faireconomy.media/ff_calendar_thisweek.json"
   refresh_minutes: 60      # never fetch more than once an hour
   retry_minutes: 15        # after a failed fetch, wait this long before trying again
   max_stale_hours: 48      # if the feed is down, keep using the last good copy for this long
@@ -12,16 +15,18 @@ calendar:
   overrides_file: events.json
 
   # Currencies to include, with the flag shown in messages. Add/remove freely.
+  # Set for AUDUSD, EURUSD, GBPUSD, EURGBP and XAUUSD (gold = USD events).
   currencies:
     USD: "🇺🇸"
     GBP: "🇬🇧"
     EUR: "🇪🇺"
-    JPY: "🇯🇵"
+    AUD: "🇦🇺"
 
-  # Impact levels to include, with their emoji (High = red folder, Medium = yellow folder).
+  # Impact levels to include, with their emoji. On ForexFactory: High = RED folder,
+  # Medium = ORANGE folder. (Yellow = Low impact is not included.)
   impacts:
     High: "🔴"
-    Medium: "🟡"
+    Medium: "🟠"
 
   # Event titles containing these words are shown in bold in the calendar message.
   # (Speeches such as "FOMC Member X Speaks" are deliberately not bold.)
@@ -41,35 +46,94 @@ calendar:
     - "Unemployment"
 
 # ---------------------------------------------------------------------------
-# Daily market news (headlines + link only, never article text)
+# Daily market news (headline text + source name only, never article text)
 # ---------------------------------------------------------------------------
 news:
   max_age_hours: 24
-  max_per_section: 2
+  monday_max_age_hours: 72   # on Mondays look back over the weekend
+  max_per_section: 1      # one short headline per market
+  limits:                 # gold and the dollar can show two (e.g. a war headline plus a gold headline)
+    gold: 2
+    usd: 2
+
+  # A headline matching one of these is shown under EVERY market listed, ahead of routine forecasts.
+  # This is how a war shows up under both GOLD and USD.
+  themes:
+    geopolitics:
+      sections: [gold, usd]
+      keywords:
+        - "war"
+        - "missile"
+        - "missiles"
+        - "airstrike"
+        - "airstrikes"
+        - "air strike"
+        - "drone attack"
+        - "ceasefire"
+        - "sanctions"
+        - "geopolitical"
+        - "Middle East"
+        - "Iran"
+        - "Israel"
+        - "Gaza"
+        - "Houthi"
+        - "Houthis"
+        - "Hezbollah"
+        - "Aramco"
+        - "Strait of Hormuz"
+        - "Ukraine"
+        - "Taiwan"
+        - "North Korea"
+        - "invasion"
+        - "nuclear"
   title_max_chars: 160
+  events_when_no_headline: true   # a market with no headline shows today's red/orange events instead
+  watch_max_events: 0     # 'Watch today' events under each section (0 = off; the calendar already lists them)
 
   # Only RSS feeds listed here are ever read. "domains" lists the websites a
   # headline link is allowed to point at (anything else is dropped).
   # "auto_section": headlines from this feed with no keyword match still go to that section.
   feeds:
+    # Official central bank sources. Speeches are market-relevant, so they go to USD / GBP.
+    # (Fed press releases only count when a keyword matches, e.g. an FOMC statement.)
     - name: "Federal Reserve"
       url: "https://www.federalreserve.gov/feeds/press_all.xml"
       domains: ["federalreserve.gov"]
-      auto_section: usd
     - name: "Federal Reserve Speeches"
       url: "https://www.federalreserve.gov/feeds/speeches_and_testimony.xml"
       domains: ["federalreserve.gov"]
       auto_section: usd
+    # The two below could not be tested from where the bot was built. If one is broken it is skipped.
+    - name: "European Central Bank"
+      url: "https://www.ecb.europa.eu/rss/press.xml"
+      domains: ["ecb.europa.eu"]
+      auto_section: eur
+    - name: "Reserve Bank of Australia"
+      url: "https://www.rba.gov.au/rss/rss-cb-media-releases.xml"
+      domains: ["rba.gov.au"]
+      auto_section: aud
     - name: "Bank of England"
       url: "https://www.bankofengland.co.uk/rss/news"
       domains: ["bankofengland.co.uk"]
       auto_section: gbp
-    - name: "BBC Business"
-      url: "https://feeds.bbci.co.uk/news/business/rss.xml"
-      domains: ["bbc.co.uk", "bbc.com"]
+    # Market news. More sources = less chance of an empty or failed briefing.
     - name: "FXStreet"
       url: "https://www.fxstreet.com/rss/news"
       domains: ["fxstreet.com"]
+    - name: "BBC Business"
+      url: "https://feeds.bbci.co.uk/news/business/rss.xml"
+      domains: ["bbc.co.uk", "bbc.com"]
+    # The three below were added as extra cover and could not be tested from where the bot
+    # was built. If one is broken it is simply skipped (the log says which).
+    - name: "Guardian Business"
+      url: "https://www.theguardian.com/uk/business/rss"
+      domains: ["theguardian.com"]
+    - name: "CNBC"
+      url: "https://www.cnbc.com/id/10000664/device/rss/rss.html"
+      domains: ["cnbc.com"]
+    - name: "MarketWatch"
+      url: "https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines"
+      domains: ["marketwatch.com"]
 
   # Headlines containing any of these are skipped (routine admin noise).
   exclude_keywords:
@@ -82,15 +146,32 @@ news:
     - "Advisory Committee"
     - "Silver price today"
     - "Appointment of"
+    - "approval of"
+    - "Consumer Credit"
+    # Pairs and currencies you do not trade (AUDUSD, EURUSD, GBPUSD, EURGBP, XAUUSD only).
+    - "USD/CHF"
+    - "USD/CAD"
+    - "USD/JPY"
+    - "EUR/JPY"
+    - "GBP/JPY"
+    - "EUR/CHF"
+    - "NZD"
+    - "Swiss franc"
+    - "Japanese Yen"
+    - "Canadian Dollar"
+    - "New Zealand Dollar"
+    - "Singapore Dollar"
+    - "Indian Rupee"
+    - "Turkish Lira"
 
   # Which section a headline goes in. "keywords" ignore capitals;
   # "keywords_exact" must match capitals exactly (so "Fed" does not match "fed up").
   sections:
+    # USD: the US dollar, the Fed and US data.
     usd:
       keywords:
         - "Federal Reserve"
         - "FOMC"
-        - "US Dollar"
         - "dollar index"
         - "greenback"
         - "Treasury"
@@ -98,26 +179,71 @@ news:
         - "US inflation"
         - "US CPI"
         - "US jobs"
+        - "US economy"
         - "nonfarm"
+        - "non-farm"
         - "payrolls"
+        - "jobless claims"
+        - "Powell"
+        - "PCE"
         - "Wall Street"
-      keywords_exact: ["Fed", "USD", "DXY"]
+      keywords_exact: ["Fed", "DXY", "NFP"]
+    # GOLD: gold and the things that move it.
     gold:
       keywords:
         - "gold"
         - "bullion"
         - "safe haven"
         - "safe-haven"
+        - "precious metal"
+        - "precious metals"
         - "XAU"
-      keywords_exact: []
+      keywords_exact: ["XAUUSD", "XAU/USD"]
+    # GBP: the pound and UK data.
     gbp:
       keywords:
         - "Bank of England"
         - "sterling"
         - "British Pound"
         - "UK inflation"
+        - "UK CPI"
         - "UK economy"
         - "UK GDP"
+        - "UK jobs"
+        - "UK unemployment"
+        - "UK retail sales"
+        - "UK wages"
         - "gilt"
         - "gilts"
+        - "Bailey"
+        - "Chancellor"
       keywords_exact: ["BoE", "GBP"]
+    # EUR: the euro and the ECB.
+    eur:
+      keywords:
+        - "ECB"
+        - "European Central Bank"
+        - "Lagarde"
+        - "euro"
+        - "eurozone"
+        - "euro zone"
+        - "Bundesbank"
+        - "Eurostat"
+        - "German economy"
+        - "Germany's economy"
+        - "French economy"
+        - "euro area"
+      keywords_exact: ["EUR", "EURUSD"]
+    # AUD: the Australian dollar and the RBA.
+    aud:
+      keywords:
+        - "RBA"
+        - "Reserve Bank of Australia"
+        - "Australian dollar"
+        - "Aussie"
+        - "Australia's economy"
+        - "Australian economy"
+        - "Australian inflation"
+        - "Australian jobs"
+        - "Bullock"
+      keywords_exact: ["AUD", "AUDUSD"]
