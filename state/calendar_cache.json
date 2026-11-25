@@ -73,6 +73,30 @@
    "title": "CB Consumer Confidence"
   },
   {
+   "currency": "AUD",
+   "datetime": "2026-11-25T00:30:00+00:00",
+   "forecast": "0.4%",
+   "impact": "High",
+   "previous": "0.8%",
+   "title": "CPI m/m"
+  },
+  {
+   "currency": "AUD",
+   "datetime": "2026-11-25T00:30:00+00:00",
+   "forecast": "4.7%",
+   "impact": "High",
+   "previous": "4.3%",
+   "title": "CPI y/y"
+  },
+  {
+   "currency": "AUD",
+   "datetime": "2026-11-25T00:30:00+00:00",
+   "forecast": "0.3%",
+   "impact": "High",
+   "previous": "0.3%",
+   "title": "Trimmed Mean CPI m/m"
+  },
+  {
    "currency": "USD",
    "datetime": "2026-11-25T13:30:00+00:00",
    "forecast": "0.3%",
@@ -95,17 +119,9 @@
    "impact": "Medium",
    "previous": "2.3%",
    "title": "Prelim GDP Price Index q/q"
-  },
-  {
-   "currency": "JPY",
-   "datetime": "2026-11-26T23:30:00+00:00",
-   "forecast": "3.0%",
-   "impact": "Medium",
-   "previous": "2.6%",
-   "title": "Tokyo Core CPI y/y"
   }
  ],
- "fetched_at": "2026-11-25T11:21:45+00:00",
- "last_attempt": "2026-11-25T11:21:45+00:00",
+ "fetched_at": "2026-11-25T12:26:06+00:00",
+ "last_attempt": "2026-11-25T12:26:06+00:00",
  "last_ok": true
 }
