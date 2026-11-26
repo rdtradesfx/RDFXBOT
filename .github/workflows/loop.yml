@@ -1,0 +1,64 @@
+name: RDFX bot loop
+
+# Fixes late/missed messages. GitHub's 5-minute timer is unreliable on the free plan, so this
+# keeps ONE run alive that checks every 3 minutes for about 28 minutes, then starts the next
+# run itself. The old timer (bot.yml) stays as a backup. Nothing is ever sent twice.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "11,41 * * * *"
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: rdfx-loop
+  cancel-in-progress: false
+
+jobs:
+  loop:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Check the bot every 3 minutes for about 28 minutes
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_ADMIN_CHAT_ID: ${{ secrets.TELEGRAM_ADMIN_CHAT_ID }}
+        run: |
+          export PYTHONPATH=src
+          git config user.name "rdfx-bot"
+          git config user.email "rdfx-bot@users.noreply.github.com"
+          SECONDS=0
+          while [ "$SECONDS" -lt 1680 ]; do
+            git pull --rebase -X theirs -q || git rebase --abort || true
+            python -m rdfx_bot run || echo "::warning::Bot run reported a problem."
+            git add state/
+            if ! git diff --cached --quiet; then
+              git commit -q -m "chore(state): update bot state [skip ci]"
+              for attempt in 1 2 3 4; do
+                if git push -q; then break; fi
+                git pull --rebase -X theirs -q || git rebase --abort || true
+                sleep $((attempt * 3))
+              done
+            fi
+            sleep 180
+          done
+
+      - name: Start the next loop
+        if: ${{ always() }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run loop.yml --repo "$GITHUB_REPOSITORY" --ref "${GITHUB_REF_NAME}"
