@@ -1,0 +1,44 @@
+# RDFX bot: trading session messages.
+# Edit the wording freely. Formatting: **bold** or <b>bold</b> both work.
+# Each session starts at the very left edge (no spaces before london:, newyork:, asia:).
+# Every <b> needs a closing </b>.
+
+london:
+  text: |
+    <b>🚨RDFX: LONDON SESSION OPEN🚨</b>
+
+    The London session is now LIVE.🇬🇧
+
+    Stay patient, wait for confirmation and don't force trades.
+
+    <b>PRECISION MEETS PROFIT.</b> 🥇
+
+newyork:
+  text: |
+    <b>RDFX: NEW YORK SESSION OPEN</b>🇺🇸🗽
+
+    New York Session is now OPEN.
+
+    US liquidity is entering the market. Expect potential volatility across USD pairs and Gold.
+
+    <b>RDFX | PRECISION MEETS PROFIT.</b>
+
+asia:
+  text: |
+    <b>RDFX: ASIAN SESSION OPEN</b>🌏
+
+    Asia is now LIVE. 🇯🇵
+
+    The Asian session is underway.
+
+    <b>RDFX | Precision Meets Profit!</b> 🥇
+
+overlap:
+  text: |
+    <b>RDFX: LONDON x NEW YORK OVERLAP</b>🔥
+
+    Both sessions are now open. This is usually the most active part of the day.
+
+    Stay patient and trade your plan.
+
+    <b>RDFX | PRECISION MEETS PROFIT.</b>
