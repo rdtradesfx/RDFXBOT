@@ -1,86 +1,130 @@
-# RDFX bot: funnel messages. Each pool rotates in random order with no
-# immediate repeat. Buttons take their link from config/links.yaml.
-#
-# To add a message: copy a block, give it a new unique "id", edit the text.
-# To remove one: delete its block.
+# RDFX bot: funnel messages. Each pool rotates in random order with no immediate repeat.
+# To add a message: copy a block, give it a new unique id. To remove one: delete its block.
 
 mentorship:
   buttons:
     - label: "APPLY NOW"
       link: MENTORSHIP_URL
   messages:
-    - id: mentorship-process
+    - id: mentorship-clear-plan
       text: |
-        You don't need another strategy. You need a process you can execute consistently.
+        Imagine approaching the markets with a clear plan, confidence in your execution and the discipline to stick to your rules.
 
-        Let's build YOU one.
+        That's the trader we build inside RDFX.
 
-        APPLY FOR MENTORSHIP⬇️
-    - id: mentorship-application
+        If you're ready to put the work in, apply below.
+
+        **APPLY FOR MENTORSHIP**👇
+    - id: mentorship-close-the-gap
       text: |
-        Looking to take trading seriously and develop long-term consistency?
+        You already know where you want your trading to take you.
 
-        RDFX 1-1 mentorship is application-only.
+        The question is how much longer you're willing to spend trying to figure it all out alone.
 
-        APPLY NOW👇
+        If you're ready to close the gap between inconsistent and consistent, let's see if you're a good fit for RDFX 1-1 mentorship.
+
+        **APPLY NOW**👇
+    - id: mentorship-bigger-goal
+      text: |
+        The goal is bigger than just finding another winning strategy.
+
+        It's building the discipline, consistency and confidence to approach the markets like a professional.
+
+        If that's where you want to get to, let's talk.
+
+        **APPLY FOR 1-1 MENTORSHIP**👇
+    - id: mentorship-repeatable-process
+      text: |
+        You don't need another strategy. You need a repeatable process.
+
+        That's exactly what we teach inside RDFX.
+
+        Start NOW.
+
+        **APPLY NOW**👇
+    - id: mentorship-one-process
+      text: |
+        Consistency doesn't come from more strategies. It comes from one process, followed properly.
+
+        Get coached 1-1 on your trading.
+
+        **APPLY NOW**👇
+    - id: mentorship-same-mistakes
+      text: |
+        Trading alone means repeating the same mistakes without knowing WHY. 😳
+
+        Get personal feedback on your trades, your habits and your decisions to scale your trading, whether you're a complete beginner or you've been at this for years.
+
+        We help you build the process funded traders rely on.
+
+        **APPLY FOR MENTORSHIP**👇
+    - id: mentorship-confidence
+      text: |
+        Confidence doesn't come from guessing. It comes from having a process you trust.
+
+        Let's build yours today.
+
+        **START YOUR 1-1 APPLICATION**👇
+    - id: mentorship-noise
+      text: |
+        More information isn't the answer. I learnt that the hard way.
+
+        Cut the noise and build one process with me, 1-1.
+
+        **APPLY FOR MENTORSHIP**👇
+    - id: mentorship-prop
+      text: |
+        Failed another prop challenge? It's rarely the strategy. It's risk, patience and ego.
+
+        We fix that one-to-one.
+
+        **APPLY FOR MENTORSHIP**👇
 
 vip:
   buttons:
-    - label: "JOIN NOW"
+    - label: "JOIN VIP"
       link: VIP_URL
   messages:
-    - id: vip-next-step
+    - id: vip-sidelines
       text: |
-        Your next step starts with getting involved.
+        If you're serious about taking your trading further, don't just sit on the sidelines.
 
-        Data Backed Trade ideas ✅
-        Market breakdowns ✅
+        Get involved with the RDFX VIP community.
 
-        + MORE inside RDFX VIP🏆
-
-        PRESS THE JOIN NOW BUTTON TO GET ACCESS↗️
-    - id: vip-want-access
+        **JOIN VIP**👇
+    - id: vip-how-to-access
       text: |
-        Want access to our trade ideas, market analysis and VIP community? 😱
+        For those asking how to get access to our VIP trade ideas, here's your next step.
 
-        Get yourself inside RDFX VIP.
-
-        PRESS THE JOIN NOW BUTTON TO GET ACCESS↗️
-    - id: vip-markets-moving
+        **JOIN VIP**👇
+    - id: vip-daily-breakdowns
       text: |
-        🚨The Markets are moving every day.
+        Every day we break down what's moving Gold and the major pairs.
 
-        Get access to the trade ideas and analysis we're sharing inside RDFX VIP.
+        If you want to follow along, RDFX VIP is your next step.
 
-        JOIN VIP NOW
-
-        PRESS THE JOIN NOW BUTTON TO GET ACCESS↗️
-    - id: vip-free-content
+        **JOIN VIP**👇
+    - id: vip-take-it-seriously
       text: |
-        Already following our FREE content?
+        At some point, you need to start taking your trading seriously.
 
-        Take the next step and get access to the VIP side of RDFX.
+        Get involved with RDFX VIP and take the next step in your trading journey.
 
-        PROVEN TRADE IDEAS!
-        MARKET INSIGHTS
-        LIVE TRADING CALLS
-
-        GET VIP ACCESS NOW
-
-        PRESS THE JOIN NOW BUTTON TO GET ACCESS↗️
-    - id: vip-more-inside
+        **JOIN VIP**👇
+    - id: vip-trading-alone
       text: |
-        🚨There's more happening inside RDFX than what you see on socials.🥷
+        Trading alone is slow.
 
-        Get access to the VIP community. 🎫
+        Get a community, proper analysis and ideas you can actually learn from.
 
-        PRESS THE JOIN NOW BUTTON TO GET ACCESS↗️
-    - id: vip-considering
+        **JOIN VIP**👇
+    - id: vip-consistency-now
       text: |
-        🚨If you've been considering joining VIP, take a look.
+        Consistency doesn't start on Monday. It starts NOW.
 
-        Everything you need to get started is pinned.
+        Step into your next session.
 
-        JOIN RDFX VIP 🎫
+        Step inside RDFX VIP.
 
-        PRESS THE JOIN NOW BUTTON TO GET ACCESS↗️
+        **JOIN VIP**👇
+
