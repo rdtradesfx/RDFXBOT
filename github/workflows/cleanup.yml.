@@ -1,0 +1,36 @@
+name: Clean up old runs
+
+# Deletes finished workflow runs older than 7 days so your Actions list stays tidy.
+# It never touches the bot's files, messages or state. Runs every Sunday, or press Run workflow.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "23 4 * * 0"
+
+permissions:
+  actions: write
+  contents: read
+
+concurrency:
+  group: rdfx-cleanup
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Delete runs older than 7 days
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -u
+          cutoff=$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)
+          ids=$(gh run list --limit 1000 --json databaseId,createdAt,status \
+            --jq ".[] | select(.status==\"completed\" and .createdAt < \"$cutoff\") | .databaseId")
+          count=0
+          for id in $ids; do
+            gh run delete "$id" >/dev/null 2>&1 && count=$((count+1)) || true
+          done
+          echo "Deleted $count old runs."
